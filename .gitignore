@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+
+# Large preprocessed / raw data (keep manifests & summaries)
+data/processed/*
+!data/processed/preprocessing_summary.csv
+data/features/
+*.edf
+*.npy
+*.npz
+
+# MLflow artifacts / temp
+mlruns/
+*.tmp
+*.log
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

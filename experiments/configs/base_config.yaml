@@ -1,0 +1,29 @@
+# SomniMap Base Configuration (Locked Decisions)
+paths:
+  raw_dataset_dir: "C:/Users/prave/OneDrive/Desktop/Somnimap/dataset"
+  project_root: "C:/Users/prave/.gemini/antigravity/scratch/SomniMap"
+  manifest_csv: "C:/Users/prave/.gemini/antigravity/scratch/SomniMap/data/manifest.csv"
+  annotation_coverage_csv: "C:/Users/prave/.gemini/antigravity/scratch/SomniMap/data/annotation_coverage.csv"
+  split_manifest_json: "C:/Users/prave/.gemini/antigravity/scratch/SomniMap/data/splits/split_manifest.json"
+  processed_dir: "C:/Users/prave/.gemini/antigravity/scratch/SomniMap/data/processed"
+  mlflow_tracking_uri: "sqlite:///C:/Users/prave/.gemini/antigravity/scratch/SomniMap/mlflow.db"
+
+preprocessing:
+  target_sfreq_hz: 100
+  epoch_duration_sec: 30
+  bandpass_low_hz: 0.3
+  bandpass_high_hz: 35.0
+  notch_hz: 50.0
+  normalization: "robust_zscore_per_recording"
+
+splits:
+  seed: 42
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  stratify_by: "group"
+
+training:
+  context_window_epochs: 20
+  context_window_ablation: [10, 20, 40]
+  temporal_contexts: ["bilstm", "tcn", "transformer"]

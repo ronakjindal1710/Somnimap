@@ -1,0 +1,243 @@
+{
+  "version": "1.0-locked",
+  "seed": 42,
+  "strategy": "subject-wise, diagnostic-group-stratified 70/15/15",
+  "total_records": 108,
+  "eligible_records": 108,
+  "excluded_records": [],
+  "partitions": {
+    "train": {
+      "n_subjects": 75,
+      "n_healthy": 12,
+      "n_pathological": 63,
+      "groups": {
+        "nfle": 28,
+        "rbd": 16,
+        "n": 12,
+        "ins": 7,
+        "plm": 6,
+        "narco": 3,
+        "sdb": 2,
+        "brux": 1
+      },
+      "n_valid_epochs": 74961,
+      "n_cap_records": 75,
+      "n_cap_events": 35924,
+      "stage_distribution": {
+        "Wake": {
+          "count": 13440,
+          "pct": 17.93
+        },
+        "N1": {
+          "count": 3315,
+          "pct": 4.42
+        },
+        "N2": {
+          "count": 27045,
+          "pct": 36.08
+        },
+        "N3": {
+          "count": 18080,
+          "pct": 24.12
+        },
+        "REM": {
+          "count": 13081,
+          "pct": 17.45
+        }
+      },
+      "record_ids": [
+        "brux2",
+        "ins2",
+        "ins3",
+        "ins4",
+        "ins6",
+        "ins7",
+        "ins8",
+        "ins9",
+        "n11",
+        "n12",
+        "n13",
+        "n14",
+        "n15",
+        "n16",
+        "n2",
+        "n3",
+        "n4",
+        "n5",
+        "n6",
+        "n9",
+        "narco1",
+        "narco2",
+        "narco4",
+        "nfle1",
+        "nfle10",
+        "nfle11",
+        "nfle13",
+        "nfle16",
+        "nfle17",
+        "nfle19",
+        "nfle20",
+        "nfle22",
+        "nfle23",
+        "nfle24",
+        "nfle26",
+        "nfle27",
+        "nfle28",
+        "nfle3",
+        "nfle30",
+        "nfle32",
+        "nfle33",
+        "nfle35",
+        "nfle36",
+        "nfle37",
+        "nfle38",
+        "nfle39",
+        "nfle4",
+        "nfle40",
+        "nfle5",
+        "nfle6",
+        "nfle7",
+        "plm1",
+        "plm10",
+        "plm3",
+        "plm4",
+        "plm6",
+        "plm7",
+        "rbd1",
+        "rbd10",
+        "rbd11",
+        "rbd12",
+        "rbd13",
+        "rbd15",
+        "rbd18",
+        "rbd19",
+        "rbd2",
+        "rbd21",
+        "rbd3",
+        "rbd4",
+        "rbd6",
+        "rbd7",
+        "rbd8",
+        "rbd9",
+        "sdb1",
+        "sdb2"
+      ]
+    },
+    "val": {
+      "n_subjects": 17,
+      "n_healthy": 2,
+      "n_pathological": 15,
+      "groups": {
+        "nfle": 6,
+        "rbd": 3,
+        "n": 2,
+        "plm": 2,
+        "narco": 1,
+        "ins": 1,
+        "brux": 1,
+        "sdb": 1
+      },
+      "n_valid_epochs": 17693,
+      "n_cap_records": 17,
+      "n_cap_events": 7545,
+      "stage_distribution": {
+        "Wake": {
+          "count": 3645,
+          "pct": 20.6
+        },
+        "N1": {
+          "count": 687,
+          "pct": 3.88
+        },
+        "N2": {
+          "count": 6065,
+          "pct": 34.28
+        },
+        "N3": {
+          "count": 4063,
+          "pct": 22.96
+        },
+        "REM": {
+          "count": 3233,
+          "pct": 18.27
+        }
+      },
+      "record_ids": [
+        "brux1",
+        "ins5",
+        "n10",
+        "n8",
+        "narco3",
+        "nfle12",
+        "nfle14",
+        "nfle15",
+        "nfle2",
+        "nfle31",
+        "nfle9",
+        "plm8",
+        "plm9",
+        "rbd17",
+        "rbd20",
+        "rbd22",
+        "sdb3"
+      ]
+    },
+    "test_locked": {
+      "n_subjects": 16,
+      "n_healthy": 2,
+      "n_pathological": 14,
+      "groups": {
+        "nfle": 6,
+        "rbd": 3,
+        "n": 2,
+        "plm": 2,
+        "ins": 1,
+        "narco": 1,
+        "sdb": 1
+      },
+      "n_valid_epochs": 16054,
+      "n_cap_records": 16,
+      "n_cap_events": 8353,
+      "stage_distribution": {
+        "Wake": {
+          "count": 2559,
+          "pct": 15.94
+        },
+        "N1": {
+          "count": 713,
+          "pct": 4.44
+        },
+        "N2": {
+          "count": 6430,
+          "pct": 40.05
+        },
+        "N3": {
+          "count": 3619,
+          "pct": 22.54
+        },
+        "REM": {
+          "count": 2733,
+          "pct": 17.02
+        }
+      },
+      "record_ids": [
+        "ins1",
+        "n1",
+        "n7",
+        "narco5",
+        "nfle18",
+        "nfle21",
+        "nfle25",
+        "nfle29",
+        "nfle34",
+        "nfle8",
+        "plm2",
+        "plm5",
+        "rbd14",
+        "rbd16",
+        "rbd5",
+        "sdb4"
+      ]
+    }
+  }
+}

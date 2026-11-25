@@ -1,0 +1,15 @@
+# SomniMap Dependencies
+numpy
+pandas
+scipy
+scikit-learn
+torch
+mne
+openpyxl
+mlflow
+streamlit
+plotly
+matplotlib
+pyyaml
+captum
+shap
