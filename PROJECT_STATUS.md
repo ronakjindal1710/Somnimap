@@ -1,14 +1,14 @@
 # SomniMap — Project Status & Production Summary
 
-**Last Updated:** 2026-11-25  
-**Environment:** CPU-only (`torch` CPU), PyTorch, MLflow (SQLite backend)  
-**Dataset:** PhysioNet CAP Sleep Database (108 EDF recordings, subject-independent 70/15/15 split: Train=75, Val=17, Test=16 locked)
+**Last Updated:** 2026-11-26  
+**Environment:** GPU (`torch` 2.5.1+cu121, NVIDIA RTX A5000 24GB), PyTorch, MLflow (SQLite backend)  
+**Dataset:** PhysioNet CAP Sleep Database (107/108 EDF recordings preprocessed locally; `nfle12.edf` missing from raw folder; subject-independent 70/15/15 split: Train=75, Val=17 [16 available], Test=16 locked)
 
 ---
 
 ## Current Standing
 
-We have **completed Phases 0, 1, 2, and 3**, and **implemented the Phase 4 flagship architecture and training script** (`SomniMapNet` + `train_somnimap.py`), which is ready to train. Production was paused here before launching Phase 4 training runs due to CPU runtime (~30 min/epoch at full `base_ch=48` and `train_stride=10`).
+**All Phases (0–8) are Complete.** The full pipeline was executed on the NVIDIA RTX A5000 GPU, culminating in a single-shot evaluation on the `test_locked` split (16 unseen subjects) and the final research report (`results/FINAL_RESEARCH_REPORT.md`).
 
 ---
 
@@ -19,12 +19,12 @@ We have **completed Phases 0, 1, 2, and 3**, and **implemented the Phase 4 flags
 | **Phase 0** | Dataset Audit & Subject-Independent Split | ✅ **Complete** | `data/manifest.csv`, `data/annotation_coverage.csv`, `data/splits/split_manifest.json` |
 | **Phase 1** | Signal Preprocessing & PyTorch Datasets | ✅ **Complete** | `src/data/preprocessing.py`, `src/data/dataset.py`, `data/processed/preprocessing_summary.csv`, `results/spot_checks/` |
 | **Phase 2** | Classical & Single-Epoch Deep Baselines | ✅ **Complete** | `results/phase2_baselines.csv`, 3 deep checkpoints (`CNN1D`, `ResNet1D`, `InceptionTime`), confusion matrices |
-| **Phase 3** | Temporal Context Models (20-epoch windows) | ✅ **Complete** *(TemporalUNet skipped)* | `results/phase3_temporal.csv`, 3 checkpoints (`CNN_BiLSTM`, `CNN_TCN`, `CNN_Transformer`), confusion matrices |
-| **Phase 4** | Flagship `SomniMapNet` & Ablations (E3–E8) | 🔄 **Code Ready / Not Trained Yet** | `src/models/somnimap_net.py`, `src/training/train_somnimap.py` |
-| **Phase 5** | CAP Event Detection Evaluation (A1/A2/A3) | ⏳ **Pending** | Depends on trained Phase 4 `SomniMapNet` dual-head checkpoint |
-| **Phase 6** | Explainability (Grad-CAM 1D, IG, Calibration) | ⏳ **Pending** | `src/xai/` |
-| **Phase 7** | SomniMap Streamlit Dashboard (8 screens) | ⏳ **Pending** | `src/app/streamlit_app.py` |
-| **Phase 8** | Final Locked Test-Set Evaluation & Report | ⏳ **Pending** | Test split (16 subjects) remains strictly untouched |
+| **Phase 3** | Temporal Context Models (20-epoch windows) | ✅ **Complete** | `results/phase3_temporal.csv`, 4 checkpoints (`CNN_BiLSTM`, `CNN_TCN`, `CNN_Transformer`, `TemporalUNet`), confusion matrices |
+| **Phase 4** | Flagship `SomniMapNet` & Ablations (E3–E8) | ✅ **Complete** | `results/phase4_somnimap.csv`, 9 checkpoints (`E3_bilstm/tcn/transformer`, `E3_w10/w40`, `E5_multichan`, `E6_focal`, `E7_no_chan_attn`, `E8_dualhead`) |
+| **Phase 5** | CAP Event Detection Evaluation (A1/A2/A3) | ✅ **Complete** | `results/phase5_cap_eval_val.json`, `results/phase5_cap_examples_val.png` |
+| **Phase 6** | Explainability (Grad-CAM 1D, IG, Calibration) | ✅ **Complete** | `src/xai/`, `results/xai/reliability_diagram.png`, `results/xai/xai_calibration_summary.json` |
+| **Phase 7** | SomniMap Streamlit Dashboard (8 screens) | ✅ **Complete** | `src/app/streamlit_app.py` (verified HTTP 200) |
+| **Phase 8** | Final Locked Test-Set Evaluation & Report | ✅ **Complete** | `results/phase8_test_locked_metrics.json`, `results/FINAL_RESEARCH_REPORT.md` |
 
 ---
 
@@ -56,7 +56,7 @@ We have **completed Phases 0, 1, 2, and 3**, and **implemented the Phase 4 flags
 | **`CNN_BiLSTM`** | **0.7747** | **0.7946** | **0.7854** | **0.4426** | 0.9065 | 0.8214 | **0.8677** | 0.8353 | 848,613 |
 | `CNN_TCN` | 0.7732 | 0.7720 | 0.7814 | 0.4410 | **0.9086** | 0.8162 | 0.8354 | **0.8650** | 583,781 |
 | `CNN_Transformer` | 0.7571 | 0.7718 | 0.7678 | 0.3984 | 0.9017 | **0.8228** | 0.8364 | 0.8261 | 461,669 |
-| `TemporalUNet` | — | — | — | — | — | — | — | — | ⏭️ Skipped |
+| `TemporalUNet` | 0.7585 | 0.7603 | 0.7757 | 0.3921 | 0.8897 | **0.8334** | 0.8404 | 0.8369 | 1,187,789 |
 
 **Key Takeaway (Phase 2 → Phase 3):** Adding 20-epoch temporal context improved validation Macro-F1 from **0.6787 → 0.7747 (+9.6 pp)** and more than doubled N1 F1 (**0.2144 → 0.4426, +22.8 pp**), with `CNN_BiLSTM` leading overall.
 

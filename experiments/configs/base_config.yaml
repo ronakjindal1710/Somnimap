@@ -1,12 +1,12 @@
 # SomniMap Base Configuration (Locked Decisions)
 paths:
-  raw_dataset_dir: "C:/Users/prave/OneDrive/Desktop/Somnimap/dataset"
-  project_root: "C:/Users/prave/.gemini/antigravity/scratch/SomniMap"
-  manifest_csv: "C:/Users/prave/.gemini/antigravity/scratch/SomniMap/data/manifest.csv"
-  annotation_coverage_csv: "C:/Users/prave/.gemini/antigravity/scratch/SomniMap/data/annotation_coverage.csv"
-  split_manifest_json: "C:/Users/prave/.gemini/antigravity/scratch/SomniMap/data/splits/split_manifest.json"
-  processed_dir: "C:/Users/prave/.gemini/antigravity/scratch/SomniMap/data/processed"
-  mlflow_tracking_uri: "sqlite:///C:/Users/prave/.gemini/antigravity/scratch/SomniMap/mlflow.db"
+  raw_dataset_dir: "C:/Users/admin/Desktop/Ronak Jindal/Somnimap/dataset"
+  project_root: "C:/Users/admin/Desktop/Somnimap"
+  manifest_csv: "C:/Users/admin/Desktop/Somnimap/data/manifest.csv"
+  annotation_coverage_csv: "C:/Users/admin/Desktop/Somnimap/data/annotation_coverage.csv"
+  split_manifest_json: "C:/Users/admin/Desktop/Somnimap/data/splits/split_manifest.json"
+  processed_dir: "C:/Users/admin/Desktop/Somnimap/data/processed"
+  mlflow_tracking_uri: "sqlite:///C:/Users/admin/Desktop/Somnimap/mlflow.db"
 
 preprocessing:
   target_sfreq_hz: 100

@@ -1,0 +1,274 @@
+{
+  "n_samples": 15623,
+  "accuracy": 0.7892850284836459,
+  "balanced_accuracy": 0.751342860603338,
+  "macro_f1": 0.738160329009767,
+  "weighted_f1": 0.7919629526750841,
+  "cohen_kappa": 0.7129620897371793,
+  "confusion_matrix": [
+    [
+      1763,
+      165,
+      141,
+      8,
+      187
+    ],
+    [
+      182,
+      404,
+      74,
+      3,
+      48
+    ],
+    [
+      315,
+      260,
+      5140,
+      354,
+      245
+    ],
+    [
+      125,
+      13,
+      696,
+      2783,
+      16
+    ],
+    [
+      91,
+      86,
+      213,
+      70,
+      2241
+    ]
+  ],
+  "per_class": {
+    "Wake": {
+      "precision": 0.7120355411954766,
+      "sensitivity": 0.7787102473498233,
+      "specificity": 0.9466277415974249,
+      "f1": 0.7438818565400844,
+      "support": 2264
+    },
+    "N1": {
+      "precision": 0.4353448275862069,
+      "sensitivity": 0.5682137834036568,
+      "specificity": 0.9648605150214592,
+      "f1": 0.49298352654057354,
+      "support": 711
+    },
+    "N2": {
+      "precision": 0.8205619412515964,
+      "sensitivity": 0.8140639847956921,
+      "specificity": 0.8792566333655603,
+      "f1": 0.8173000477023374,
+      "support": 6314
+    },
+    "N3": {
+      "precision": 0.8648228713486638,
+      "sensitivity": 0.7660335810624828,
+      "specificity": 0.96371976647206,
+      "f1": 0.8124361407093855,
+      "support": 3633
+    },
+    "REM": {
+      "precision": 0.8187796857873584,
+      "sensitivity": 0.8296927064050351,
+      "specificity": 0.9616158489397926,
+      "f1": 0.8242000735564545,
+      "support": 2701
+    }
+  },
+  "ece": 0.054238724272099886,
+  "brier_score": 0.31329780440805927,
+  "ece_calibrated": 0.0335,
+  "brier_calibrated": 0.31,
+  "temperature": 1.1757,
+  "ci95": {
+    "macro_f1_ci95": [
+      0.6494,
+      0.8015
+    ],
+    "balanced_acc_ci95": [
+      0.6638,
+      0.8182
+    ],
+    "cohen_kappa_ci95": [
+      0.6046,
+      0.7954
+    ],
+    "N1_f1_ci95": [
+      0.3213,
+      0.5946
+    ]
+  },
+  "per_subject": [
+    {
+      "record_id": "ins1",
+      "n_samples": 906,
+      "macro_f1": 0.7296,
+      "cohen_kappa": 0.7259,
+      "accuracy": 0.8201
+    },
+    {
+      "record_id": "n1",
+      "n_samples": 1146,
+      "macro_f1": 0.829,
+      "cohen_kappa": 0.8228,
+      "accuracy": 0.8787
+    },
+    {
+      "record_id": "n7",
+      "n_samples": 989,
+      "macro_f1": 0.7172,
+      "cohen_kappa": 0.8526,
+      "accuracy": 0.8959
+    },
+    {
+      "record_id": "narco5",
+      "n_samples": 816,
+      "macro_f1": 0.742,
+      "cohen_kappa": 0.8504,
+      "accuracy": 0.8934
+    },
+    {
+      "record_id": "nfle18",
+      "n_samples": 1066,
+      "macro_f1": 0.7634,
+      "cohen_kappa": 0.6884,
+      "accuracy": 0.7589
+    },
+    {
+      "record_id": "nfle21",
+      "n_samples": 1134,
+      "macro_f1": 0.8316,
+      "cohen_kappa": 0.8245,
+      "accuracy": 0.8818
+    },
+    {
+      "record_id": "nfle25",
+      "n_samples": 535,
+      "macro_f1": 0.1609,
+      "cohen_kappa": -0.0046,
+      "accuracy": 0.1776
+    },
+    {
+      "record_id": "nfle29",
+      "n_samples": 886,
+      "macro_f1": 0.8531,
+      "cohen_kappa": 0.8321,
+      "accuracy": 0.8758
+    },
+    {
+      "record_id": "nfle34",
+      "n_samples": 1016,
+      "macro_f1": 0.8159,
+      "cohen_kappa": 0.8097,
+      "accuracy": 0.8622
+    },
+    {
+      "record_id": "nfle8",
+      "n_samples": 949,
+      "macro_f1": 0.5694,
+      "cohen_kappa": 0.7345,
+      "accuracy": 0.823
+    },
+    {
+      "record_id": "plm2",
+      "n_samples": 918,
+      "macro_f1": 0.8282,
+      "cohen_kappa": 0.8751,
+      "accuracy": 0.9074
+    },
+    {
+      "record_id": "plm5",
+      "n_samples": 822,
+      "macro_f1": 0.8015,
+      "cohen_kappa": 0.8116,
+      "accuracy": 0.8869
+    },
+    {
+      "record_id": "rbd14",
+      "n_samples": 1113,
+      "macro_f1": 0.7658,
+      "cohen_kappa": 0.7275,
+      "accuracy": 0.7925
+    },
+    {
+      "record_id": "rbd16",
+      "n_samples": 1099,
+      "macro_f1": 0.4654,
+      "cohen_kappa": 0.4207,
+      "accuracy": 0.586
+    },
+    {
+      "record_id": "rbd5",
+      "n_samples": 1158,
+      "macro_f1": 0.3404,
+      "cohen_kappa": 0.3988,
+      "accuracy": 0.5872
+    },
+    {
+      "record_id": "sdb4",
+      "n_samples": 1070,
+      "macro_f1": 0.751,
+      "cohen_kappa": 0.6865,
+      "accuracy": 0.8047
+    }
+  ],
+  "cap_event_eval": {
+    "iou_threshold": 0.5,
+    "overall": {
+      "tp": 3569,
+      "fp": 7117,
+      "fn": 4629,
+      "precision": 0.334,
+      "recall": 0.4354,
+      "f1": 0.378,
+      "mean_iou": 0.7758,
+      "onset_err_s": 0.7998,
+      "offset_err_s": 1.1186,
+      "dur_err_s": 1.5908
+    },
+    "per_subtype": {
+      "A1": {
+        "tp": 1993,
+        "fp": 2884,
+        "fn": 2029,
+        "precision": 0.4087,
+        "recall": 0.4955,
+        "f1": 0.4479,
+        "mean_iou": 0.7573,
+        "onset_err_s": 0.5878,
+        "offset_err_s": 0.8056,
+        "dur_err_s": 1.0993
+      },
+      "A2": {
+        "tp": 128,
+        "fp": 1808,
+        "fn": 1626,
+        "precision": 0.0661,
+        "recall": 0.073,
+        "f1": 0.0694,
+        "mean_iou": 0.686,
+        "onset_err_s": 0.8578,
+        "offset_err_s": 1.0703,
+        "dur_err_s": 1.6984
+      },
+      "A3": {
+        "tp": 1448,
+        "fp": 2425,
+        "fn": 974,
+        "precision": 0.3739,
+        "recall": 0.5979,
+        "f1": 0.46,
+        "mean_iou": 0.8092,
+        "onset_err_s": 1.0865,
+        "offset_err_s": 1.5537,
+        "dur_err_s": 2.2576
+      }
+    },
+    "cap_rate_pearson_r": 0.7366,
+    "n_records": 16
+  }
+}

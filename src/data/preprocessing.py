@@ -328,10 +328,14 @@ def run_preprocessing(config_path: Path, limit: int | None = None) -> None:
         if meta_path.exists():
             summaries.append(json.loads(meta_path.read_text(encoding="utf-8")))
             continue
+        edf_path = raw_dir / f"{rec_id}.edf"
+        if not edf_path.exists():
+            print(f"[{i:3d}/{len(tasks)}] {rec_id:8s} ({split_name:11s}) | SKIPPED (missing {edf_path.name})", flush=True)
+            continue
         rec_t0 = time.time()
         meta = process_single_record(
             rec_id=rec_id,
-            edf_path=raw_dir / f"{rec_id}.edf",
+            edf_path=edf_path,
             txt_path=raw_dir / f"{rec_id}.txt",
             out_dir=out_dir,
             split_name=split_name,
@@ -371,5 +375,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=None, help="Process only first N records for testing")
     args = parser.parse_args()
-    cfg_path = Path("C:/Users/prave/.gemini/antigravity/scratch/SomniMap/experiments/configs/base_config.yaml")
+    cfg_path = Path("C:/Users/admin/Desktop/Somnimap/experiments/configs/base_config.yaml")
     run_preprocessing(cfg_path, limit=args.limit)

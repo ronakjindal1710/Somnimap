@@ -34,6 +34,8 @@ class SomniMapEpochDataset(Dataset):
 
         for rec_id in record_ids:
             rec_dir = self.processed_dir / rec_id
+            if not (rec_dir / "metadata.json").exists():
+                continue
             meta = json.loads((rec_dir / "metadata.json").read_text(encoding="utf-8"))
             y_stage = np.load(rec_dir / "labels_stage.npy")
             valid_idx = np.where(y_stage >= 0)[0]
@@ -100,6 +102,8 @@ class SomniMapSequenceDataset(Dataset):
 
         for rec_id in record_ids:
             rec_dir = self.processed_dir / rec_id
+            if not (rec_dir / "metadata.json").exists():
+                continue
             meta = json.loads((rec_dir / "metadata.json").read_text(encoding="utf-8"))
             y_stage = np.load(rec_dir / "labels_stage.npy")
             y_cap = np.load(rec_dir / "labels_cap.npy")

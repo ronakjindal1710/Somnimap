@@ -166,6 +166,12 @@ class SomniMapNet(nn.Module):
                 ch_mask = torch.ones((b, c), device=x.device, dtype=x.dtype)
             ch_m = ch_mask.unsqueeze(1).expand(b, t_ep, c).reshape(b * t_ep, c)
             fused = self.chan_attn(stem_out.view(b * t_ep, c, d, l_stem), ch_m)
+        elif c > 1:
+            if ch_mask is None:
+                ch_mask = torch.ones((b, c), device=x.device, dtype=x.dtype)
+            ch_m = ch_mask.unsqueeze(1).expand(b, t_ep, c).reshape(b * t_ep, c)
+            masked = stem_out.view(b * t_ep, c, d, l_stem) * ch_m.view(b * t_ep, c, 1, 1)
+            fused = masked.sum(dim=1) / ch_m.sum(dim=1).clamp(min=1.0).view(b * t_ep, 1, 1)
         else:
             fused = stem_out.view(b * t_ep, d, l_stem)
 

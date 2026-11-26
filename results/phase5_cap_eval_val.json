@@ -1,0 +1,55 @@
+{
+  "iou_threshold": 0.5,
+  "overall": {
+    "tp": 2227,
+    "fp": 6072,
+    "fn": 4399,
+    "precision": 0.2683,
+    "recall": 0.3361,
+    "f1": 0.2984,
+    "mean_iou": 0.765,
+    "onset_err_s": 0.9201,
+    "offset_err_s": 1.367,
+    "dur_err_s": 1.9705
+  },
+  "per_subtype": {
+    "A1": {
+      "tp": 1094,
+      "fp": 2434,
+      "fn": 2057,
+      "precision": 0.3101,
+      "recall": 0.3472,
+      "f1": 0.3276,
+      "mean_iou": 0.7398,
+      "onset_err_s": 0.6993,
+      "offset_err_s": 0.8956,
+      "dur_err_s": 1.3384
+    },
+    "A2": {
+      "tp": 92,
+      "fp": 1678,
+      "fn": 1430,
+      "precision": 0.052,
+      "recall": 0.0604,
+      "f1": 0.0559,
+      "mean_iou": 0.6377,
+      "onset_err_s": 1.2207,
+      "offset_err_s": 1.2663,
+      "dur_err_s": 2.3326
+    },
+    "A3": {
+      "tp": 1041,
+      "fp": 1960,
+      "fn": 912,
+      "precision": 0.3469,
+      "recall": 0.533,
+      "f1": 0.4203,
+      "mean_iou": 0.8027,
+      "onset_err_s": 1.1256,
+      "offset_err_s": 1.8712,
+      "dur_err_s": 2.6029
+    }
+  },
+  "cap_rate_pearson_r": 0.8835,
+  "n_records": 16
+}

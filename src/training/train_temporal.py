@@ -164,7 +164,7 @@ def main() -> None:
     parser.add_argument("--max_epochs", type=int, default=18)
     args = parser.parse_args()
 
-    cfg_path = Path("C:/Users/prave/.gemini/antigravity/scratch/SomniMap/experiments/configs/base_config.yaml")
+    cfg_path = Path("C:/Users/admin/Desktop/Somnimap/experiments/configs/base_config.yaml")
     with open(cfg_path, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
