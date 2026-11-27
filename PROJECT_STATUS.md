@@ -36,3 +36,20 @@ The project now includes:
 
 ## Optional Future Work (Stage 3 — Requires Explicit Approval)
 - GPU retraining of `SomniMapNet` with class-weighted/focal+dice CAP loss (to further boost `A2` sensitivity at model level) and N1-balanced sampling, followed by an authorized versioned evaluation.
+
+---
+
+## Demo vs. Stage 3 Readiness Check
+
+### Ready Right Now for Live Demo / Review
+- **Raw `.edf` Upload & Inference (Screen 9):** Works end-to-end with `SomniMapPredictor` (`stride=5`, `T=1.1757`, frozen `val` CAP sweep defaults `smooth_frames=7, bg_thresh=0.35, a2_mult=2.0, min_dur_s=2.5, merge_gap_s=1.5` -> `val` CAP F1 `0.4326`, CAP Rate Pearson `r = 0.9319`).
+- **Optional Ground-Truth Overlay:** Supports optional RemLogic `.txt` annotation upload (`parse_txt_annotations` + `align_annotations_to_epochs`) for side-by-side hypnogram comparison.
+- **Domain-Shift & `A2` Guardrails:** Both Screen 9 and exported `.md`/`.json` reports automatically surface a `HIGH DOMAIN-SHIFT / UNCALIBRATED MONTAGE WARNING` whenever `> 2` canonical EEG channels are missing, fallback montage mapping is used, or predicted stage shares look out-of-distribution (`REM > 50%` or `N2 < 10%`), preventing high softmax confidence (`~0.90`) from being misread as in-domain physiological reliability. Macro CAP rate (`r = 0.9319` on `val`) is paired with explicit exploratory caveats on per-event precision (`0.4558`) and `A2` sensitivity (`F1 ~0.27–0.29`).
+- **Honest Multimodal Physiology & Export:** Extracts ECG HR/SDNN/RMSSD, respiratory rate, and $\text{SpO}_2$ only when present (explicitly marking missing channels unavailable) and exports self-contained `.md` and `.json` reports.
+- **Demo Recordings:**
+  - *Full-channel non-training CAP `val` candidates* (note: all 108 CAP recordings are partitioned into `train(75)/val(17)/test_locked(16)`, with `test_locked` untouched): `n10`, `ins5`, `rbd17`, `sdb3` (e.g. `n10` achieves balanced sleep stages, `domain_shift=False`, `ecg_available=True`, `cap_rate_nrem=11.13%` — see `results/heldout_cap_vs_sleepedf_comparison.json`).
+  - *External unseen partial-channel demo:* Sleep-EDF Expanded (`SC4001E0-PSG.edf`, `SC4011E0-PSG.edf`, `SC4021E0-PSG.edf`), which cleanly triggers the domain-shift warning (`4/5` canonical EEG missing, fallback montage, `REM=64.08%`, `N2=7.17%`).
+
+### Requires Stage 3 GPU Retraining Later (Not Run Automatically)
+- Pushing `A2` subtype F1 beyond the post-processing ceiling (`~0.27–0.29` on `val`) and improving fine-grained per-event precision (`0.4558` on `val`) requires GPU retraining of `SomniMapNet` with class-weighted / Focal + Dice CAP loss (`cap_weight` increased from `0.3` to `1.0`) and N1-balanced sampling.
+- Improving cross-montage generalization to single-EEG external datasets (such as Sleep-EDF `Fpz-Cz`) without triggering domain-shift warnings requires montage-agnostic / channel-dropout augmentation during training.

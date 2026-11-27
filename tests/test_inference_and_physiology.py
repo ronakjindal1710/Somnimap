@@ -149,3 +149,64 @@ def test_align_annotations_to_epochs_helper() -> None:
     assert list(st) == [0, 2, 3]
     assert cap.shape == (3, 300)
     assert int((cap[1] == 2).sum()) == 40
+
+
+def test_domain_shift_warning_triggered_on_ood_sleep_edf() -> None:
+    from src.inference.report_export import assess_domain_shift, build_analysis_report_markdown, build_analysis_summary_json
+
+    edf_info = {
+        "file_name": "SC4001E0-PSG.edf",
+        "duration_sec": 79500.0,
+        "header_sfreq_hz": 100.0,
+        "canonical_mapping": {"EEG_C4_A1": ["EEG Fpz-Cz", None], "EOG": ["EOG horizontal", None]},
+        "multimodal_extras": {},
+        "warnings": ["Primary CAP EEG (C4-A1/C3-A2) absent; mapped 'EEG Fpz-Cz' as primary EEG."],
+    }
+    predictions = {
+        "n_epochs": 2650,
+        "stage_counts": {"Wake": 500, "N1": 16, "N2": 190, "N3": 246, "REM": 1698},
+        "stage_percentages": {"Wake": 18.87, "N1": 0.60, "N2": 7.17, "N3": 9.28, "REM": 64.08},
+        "stage_confidence": np.full(2650, 0.898, dtype=np.float32),
+        "stage_entropy": np.full(2650, 0.15, dtype=np.float32),
+        "low_confidence_epochs": [],
+        "cap_rate_nrem": 0.12,
+        "cap_events": [],
+        "cap_event_counts": {"A1": 0, "A2": 0, "A3": 0},
+        "provenance": {"checkpoint": "test.pt", "context_type": "bilstm", "in_channels": 6, "temperature": 1.1757, "stride_epochs": 5},
+    }
+    ds = assess_domain_shift(edf_info, predictions)
+    assert ds["high_domain_shift"] is True
+    assert ds["n_missing_canonical_eeg"] == 4
+    assert ds["fallback_montage_used"] is True
+    assert any("REM share" in r for r in ds["reasons"])
+    assert any("N2 share" in r for r in ds["reasons"])
+
+    md = build_analysis_report_markdown({"edf_info": edf_info, "predictions": predictions, "loaded_sfreq": 100.0}, {"disclaimer": "test", "ecg": {"available": False}, "respiratory": {"available": False}, "spo2": {"available": False}})
+    assert "HIGH DOMAIN-SHIFT / UNCALIBRATED MONTAGE WARNING" in md
+    assert "r = 0.9319" in md
+
+    import json
+    js = json.loads(build_analysis_summary_json({"edf_info": edf_info, "predictions": predictions}, {"ecg": {"available": False}}))
+    assert js["domain_shift_assessment"]["high_domain_shift"] is True
+
+
+def test_domain_shift_nominal_on_full_channel_cap() -> None:
+    from src.inference.report_export import assess_domain_shift
+
+    edf_info = {
+        "canonical_mapping": {
+            "EEG_C4_A1": ["C4-A1", None],
+            "EEG_F4_C4": ["F4-C4", None],
+            "EEG_C4_P4": ["C4-P4", None],
+            "EEG_FP2_F4": ["FP2-F4", None],
+            "EOG": ["ROC-LOC", None],
+            "EMG_CHIN": ["EMG1-EMG2", None],
+        },
+        "warnings": [],
+    }
+    predictions = {
+        "stage_percentages": {"Wake": 15.0, "N1": 5.0, "N2": 45.0, "N3": 20.0, "REM": 15.0},
+    }
+    ds = assess_domain_shift(edf_info, predictions)
+    assert ds["high_domain_shift"] is False
+    assert ds["reasons"] == []

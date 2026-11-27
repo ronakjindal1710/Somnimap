@@ -9,6 +9,52 @@ from typing import Any
 import numpy as np
 
 
+CANONICAL_EEG_CHANNELS = ("EEG_C4_A1", "EEG_C3_A2", "EEG_F4_C4", "EEG_C4_P4", "EEG_FP2_F4")
+
+
+def assess_domain_shift(edf_info: dict[str, Any], predictions: dict[str, Any]) -> dict[str, Any]:
+    """Detect missing canonical EEG channels, fallback montage mapping, or OOD stage shares."""
+    mapping = edf_info.get("canonical_mapping", {})
+    missing_eeg = [ch for ch in CANONICAL_EEG_CHANNELS if ch not in mapping]
+    warnings_list = edf_info.get("warnings", []) or []
+    fallback_used = any("absent; mapped" in w.lower() or "fallback" in w.lower() for w in warnings_list)
+
+    pcts = predictions.get("stage_percentages", {})
+    rem_pct = float(pcts.get("REM", 0.0))
+    n2_pct = float(pcts.get("N2", 0.0))
+
+    reasons: list[str] = []
+    if len(missing_eeg) > 2:
+        reasons.append(
+            f"{len(missing_eeg)}/{len(CANONICAL_EEG_CHANNELS)} canonical EEG channels missing/masked to zero ({missing_eeg})"
+        )
+    if fallback_used:
+        reasons.append("fallback EEG montage mapping used (recording montage differs from CAP Sleep Database)")
+    if rem_pct > 50.0:
+        reasons.append(f"out-of-distribution predicted REM share ({rem_pct:.1f}% > 50%)")
+    if n2_pct < 10.0:
+        reasons.append(f"out-of-distribution predicted N2 share ({n2_pct:.1f}% < 10%)")
+
+    high_risk = len(reasons) > 0
+    summary = (
+        "HIGH DOMAIN-SHIFT / UNCALIBRATED MONTAGE WARNING: "
+        + "; ".join(reasons)
+        + ". High model confidence reflects in-distribution softmax calibration (T=1.1757) and must NOT be interpreted as in-domain physiological reliability under missing/mismatched montages."
+        if high_risk
+        else "In-domain channel coverage and physiological stage distribution appear nominal."
+    )
+    return {
+        "high_domain_shift": high_risk,
+        "n_missing_canonical_eeg": len(missing_eeg),
+        "missing_canonical_eeg": missing_eeg,
+        "fallback_montage_used": fallback_used,
+        "rem_pct": round(rem_pct, 2),
+        "n2_pct": round(n2_pct, 2),
+        "reasons": reasons,
+        "summary": summary,
+    }
+
+
 def build_analysis_report_markdown(result: dict[str, Any], physiology: dict[str, Any]) -> str:
     """Generate a self-contained Markdown research report with provenance and caveats."""
     info = result["edf_info"]
@@ -36,6 +82,14 @@ def build_analysis_report_markdown(result: dict[str, Any], physiology: dict[str,
         for w in info["warnings"]:
             lines.append(f"  - {w}")
 
+    domain_shift = assess_domain_shift(info, pred)
+    if domain_shift["high_domain_shift"]:
+        lines += [
+            "",
+            "> [!WARNING]",
+            f"> **{domain_shift['summary']}**",
+        ]
+
     lines += [
         "",
         "## 2. Predictive Outputs — Sleep-Stage Architecture",
@@ -60,9 +114,9 @@ def build_analysis_report_markdown(result: dict[str, Any], physiology: dict[str,
         lines += [
             "",
             "## 3. Predictive Outputs — CAP Event Analysis (Predicted NREM)",
-            f"- **Predicted NREM CAP Rate:** {pred['cap_rate_nrem'] * 100:.2f}%",
-            f"- **Detected Events (>= 2.0 s, smoothed):** Total = {len(pred['cap_events'])} (`A1={counts['A1']}`, `A2={counts['A2']}`, `A3={counts['A3']}`)",
-            "- *Note:* CAP A2 detection has lower sensitivity in automated scoring; event counts should be treated as exploratory.",
+            f"- **Predicted NREM CAP Rate:** {pred['cap_rate_nrem'] * 100:.2f}% (macro CAP rate Pearson $r = 0.9319$ on `val`)",
+            f"- **Detected Events (>= 2.5 s, smoothed, merge gap <= 1.5 s):** Total = {len(pred['cap_events'])} (`A1={counts['A1']}`, `A2={counts['A2']}`, `A3={counts['A3']}`)",
+            "- *Note:* Macro NREM CAP rate correlates strongly with ground truth on in-domain `val` (`r = 0.9319`), but per-event precision (`0.4558` overall) and `A2` subtype sensitivity (`F1 ~0.27–0.29` on `val`) remain exploratory; do not treat individual `A2` counts or exact event boundaries as clinical truth.",
         ]
 
     lines += [
@@ -99,9 +153,11 @@ def build_analysis_report_markdown(result: dict[str, Any], physiology: dict[str,
 def build_analysis_summary_json(result: dict[str, Any], physiology: dict[str, Any]) -> str:
     """Serialize lightweight JSON summary (without large raw signal arrays)."""
     pred = result["predictions"]
+    domain_shift = assess_domain_shift(result["edf_info"], pred)
     payload = {
         "edf_info": result["edf_info"],
         "provenance": pred["provenance"],
+        "domain_shift_assessment": domain_shift,
         "n_epochs": pred["n_epochs"],
         "stage_counts": pred["stage_counts"],
         "stage_percentages": pred["stage_percentages"],

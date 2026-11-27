@@ -1,0 +1,325 @@
+{
+  "note": "All 108 CAP Sleep Database recordings are partitioned into train(75)/val(17)/test_locked(16). n10 is a non-training val recording; test_locked is untouched.",
+  "heldout_cap_val_demo_candidates": [
+    "n10",
+    "ins5",
+    "rbd17",
+    "sdb3"
+  ],
+  "full_channel_cap_val_n10": {
+    "summary": {
+      "edf_info": {
+        "file_name": "n10.edf",
+        "duration_sec": 29400.0,
+        "n_epochs_30s": 980,
+        "header_sfreq_hz": 512.0,
+        "start_datetime": "2008-01-01T22:24:52+00:00",
+        "all_labels": [
+          "Fp2-F4",
+          "F4-C4",
+          "C4-P4",
+          "P4-O2",
+          "F8-T4",
+          "T4-T6",
+          "FP1-F3",
+          "F3-C3",
+          "C3-P3",
+          "P3-O1",
+          "F7-T3",
+          "T3-T5",
+          "C4-A1",
+          "ROC-LOC",
+          "EMG1-EMG2",
+          "ECG1-ECG2",
+          "DX1-DX2",
+          "SX1-SX2"
+        ],
+        "channel_units": {
+          "Fp2-F4": "107 (FIFF_UNIT_V)",
+          "F4-C4": "107 (FIFF_UNIT_V)",
+          "C4-P4": "107 (FIFF_UNIT_V)",
+          "P4-O2": "107 (FIFF_UNIT_V)",
+          "F8-T4": "107 (FIFF_UNIT_V)",
+          "T4-T6": "107 (FIFF_UNIT_V)",
+          "FP1-F3": "107 (FIFF_UNIT_V)",
+          "F3-C3": "107 (FIFF_UNIT_V)",
+          "C3-P3": "107 (FIFF_UNIT_V)",
+          "P3-O1": "107 (FIFF_UNIT_V)",
+          "F7-T3": "107 (FIFF_UNIT_V)",
+          "T3-T5": "107 (FIFF_UNIT_V)",
+          "C4-A1": "107 (FIFF_UNIT_V)",
+          "ROC-LOC": "107 (FIFF_UNIT_V)",
+          "EMG1-EMG2": "107 (FIFF_UNIT_V)",
+          "ECG1-ECG2": "107 (FIFF_UNIT_V)",
+          "DX1-DX2": "107 (FIFF_UNIT_V)",
+          "SX1-SX2": "107 (FIFF_UNIT_V)"
+        },
+        "canonical_mapping": {
+          "EEG_C4_A1": [
+            "C4-A1",
+            null
+          ],
+          "EEG_F4_C4": [
+            "F4-C4",
+            null
+          ],
+          "EEG_C4_P4": [
+            "C4-P4",
+            null
+          ],
+          "EEG_FP2_F4": [
+            "Fp2-F4",
+            null
+          ],
+          "EOG": [
+            "ROC-LOC",
+            null
+          ],
+          "EMG_CHIN": [
+            "EMG1-EMG2",
+            null
+          ]
+        },
+        "multimodal_extras": {
+          "ECG": "ECG1-ECG2"
+        },
+        "compatible": true,
+        "warnings": []
+      },
+      "provenance": {
+        "checkpoint": "phase4_SomniMapNet_bilstm_w20_E8_dualhead_best.pt",
+        "context_type": "bilstm",
+        "in_channels": 6,
+        "temperature": 1.1757,
+        "stride_epochs": 5,
+        "device": "cpu"
+      },
+      "domain_shift_assessment": {
+        "high_domain_shift": false,
+        "n_missing_canonical_eeg": 1,
+        "missing_canonical_eeg": [
+          "EEG_C3_A2"
+        ],
+        "fallback_montage_used": false,
+        "rem_pct": 17.24,
+        "n2_pct": 34.29,
+        "reasons": [],
+        "summary": "In-domain channel coverage and physiological stage distribution appear nominal."
+      },
+      "n_epochs": 980,
+      "stage_counts": {
+        "Wake": 135,
+        "N1": 13,
+        "N2": 336,
+        "N3": 327,
+        "REM": 169
+      },
+      "stage_percentages": {
+        "Wake": 13.78,
+        "N1": 1.33,
+        "N2": 34.29,
+        "N3": 33.37,
+        "REM": 17.24
+      },
+      "mean_confidence": 0.8264,
+      "mean_entropy": 0.2694,
+      "n_low_confidence_epochs": 97,
+      "cap_rate_nrem": 0.1113,
+      "cap_event_counts": {
+        "A1": 268,
+        "A2": 25,
+        "A3": 31
+      },
+      "physiology": {
+        "disclaimer": "Exploratory signal-derived physiological measurements only; not a clinical diagnosis.",
+        "ecg": {
+          "available": true,
+          "n_beats": 37634,
+          "mean_hr_bpm": 76.8,
+          "overall_sdnn_ms": 75.27,
+          "overall_rmssd_ms": 52.62,
+          "by_stage": {
+            "Wake": {
+              "mean_hr_bpm": 83.43,
+              "sdnn_ms": 79.1,
+              "rmssd_ms": 41.63
+            },
+            "N1": {
+              "mean_hr_bpm": 76.38,
+              "sdnn_ms": 68.99,
+              "rmssd_ms": 66.42
+            },
+            "N2": {
+              "mean_hr_bpm": 76.42,
+              "sdnn_ms": 73.81,
+              "rmssd_ms": 57.73
+            },
+            "N3": {
+              "mean_hr_bpm": 76.19,
+              "sdnn_ms": 56.75,
+              "rmssd_ms": 49.06
+            },
+            "REM": {
+              "mean_hr_bpm": 76.65,
+              "sdnn_ms": 83.07,
+              "rmssd_ms": 56.59
+            }
+          },
+          "mean_cap_hr_delta_bpm": 0.22
+        },
+        "respiratory": {
+          "available": false,
+          "reason": "Respiratory channel not present in EDF"
+        },
+        "spo2": {
+          "available": false,
+          "reason": "SpO2 channel not present in EDF"
+        }
+      }
+    },
+    "gt_stage_comparison": {
+      "available": true,
+      "n_scored_epochs": 852,
+      "accuracy": 0.696,
+      "macro_f1": 0.5216
+    }
+  },
+  "partial_channel_sleep_edf_SC4001E0": {
+    "summary": {
+      "edf_info": {
+        "file_name": "SC4001E0-PSG.edf",
+        "duration_sec": 79500.0,
+        "n_epochs_30s": 2650,
+        "header_sfreq_hz": 100.0,
+        "start_datetime": "1989-04-24T16:13:00+00:00",
+        "all_labels": [
+          "EEG Fpz-Cz",
+          "EEG Pz-Oz",
+          "EOG horizontal",
+          "Resp oro-nasal",
+          "EMG submental",
+          "Temp rectal",
+          "Event marker"
+        ],
+        "channel_units": {
+          "EEG Fpz-Cz": "107 (FIFF_UNIT_V)",
+          "EEG Pz-Oz": "107 (FIFF_UNIT_V)",
+          "EOG horizontal": "107 (FIFF_UNIT_V)",
+          "Resp oro-nasal": "107 (FIFF_UNIT_V)",
+          "EMG submental": "107 (FIFF_UNIT_V)",
+          "Temp rectal": "107 (FIFF_UNIT_V)",
+          "Event marker": "107 (FIFF_UNIT_V)"
+        },
+        "canonical_mapping": {
+          "EOG": [
+            "EOG horizontal",
+            null
+          ],
+          "EMG_CHIN": [
+            "EMG submental",
+            null
+          ],
+          "EEG_C4_A1": [
+            "EEG Fpz-Cz",
+            null
+          ]
+        },
+        "multimodal_extras": {
+          "RESP_FLOW": "Resp oro-nasal"
+        },
+        "compatible": true,
+        "warnings": [
+          "Primary CAP EEG (C4-A1/C3-A2) absent; mapped 'EEG Fpz-Cz' as primary EEG.",
+          "Missing canonical channels (masked to 0, not fabricated): ['EEG_F4_C4', 'EEG_C4_P4', 'EEG_FP2_F4']"
+        ]
+      },
+      "provenance": {
+        "checkpoint": "phase4_SomniMapNet_bilstm_w20_E8_dualhead_best.pt",
+        "context_type": "bilstm",
+        "in_channels": 6,
+        "temperature": 1.1757,
+        "stride_epochs": 5,
+        "device": "cpu"
+      },
+      "domain_shift_assessment": {
+        "high_domain_shift": true,
+        "n_missing_canonical_eeg": 4,
+        "missing_canonical_eeg": [
+          "EEG_C3_A2",
+          "EEG_F4_C4",
+          "EEG_C4_P4",
+          "EEG_FP2_F4"
+        ],
+        "fallback_montage_used": true,
+        "rem_pct": 64.08,
+        "n2_pct": 7.17,
+        "reasons": [
+          "4/5 canonical EEG channels missing/masked to zero (['EEG_C3_A2', 'EEG_F4_C4', 'EEG_C4_P4', 'EEG_FP2_F4'])",
+          "fallback EEG montage mapping used (recording montage differs from CAP Sleep Database)",
+          "out-of-distribution predicted REM share (64.1% > 50%)",
+          "out-of-distribution predicted N2 share (7.2% < 10%)"
+        ],
+        "summary": "HIGH DOMAIN-SHIFT / UNCALIBRATED MONTAGE WARNING: 4/5 canonical EEG channels missing/masked to zero (['EEG_C3_A2', 'EEG_F4_C4', 'EEG_C4_P4', 'EEG_FP2_F4']); fallback EEG montage mapping used (recording montage differs from CAP Sleep Database); out-of-distribution predicted REM share (64.1% > 50%); out-of-distribution predicted N2 share (7.2% < 10%). High model confidence reflects in-distribution softmax calibration (T=1.1757) and must NOT be interpreted as in-domain physiological reliability under missing/mismatched montages."
+      },
+      "n_epochs": 2650,
+      "stage_counts": {
+        "Wake": 453,
+        "N1": 16,
+        "N2": 190,
+        "N3": 293,
+        "REM": 1698
+      },
+      "stage_percentages": {
+        "Wake": 17.09,
+        "N1": 0.6,
+        "N2": 7.17,
+        "N3": 11.06,
+        "REM": 64.08
+      },
+      "mean_confidence": 0.898,
+      "mean_entropy": 0.1702,
+      "n_low_confidence_epochs": 110,
+      "cap_rate_nrem": 0.0269,
+      "cap_event_counts": {
+        "A1": 71,
+        "A2": 3,
+        "A3": 3
+      },
+      "physiology": {
+        "disclaimer": "Exploratory signal-derived physiological measurements only; not a clinical diagnosis.",
+        "ecg": {
+          "available": false,
+          "reason": "ECG channel not present in EDF"
+        },
+        "respiratory": {
+          "available": true,
+          "mean_br_bpm": 19.04,
+          "by_stage": {
+            "Wake": {
+              "mean_br_bpm": 19.93
+            },
+            "N1": {
+              "mean_br_bpm": 15.62
+            },
+            "N2": {
+              "mean_br_bpm": 15.09
+            },
+            "N3": {
+              "mean_br_bpm": 15.35
+            },
+            "REM": {
+              "mean_br_bpm": 19.92
+            }
+          }
+        },
+        "spo2": {
+          "available": false,
+          "reason": "SpO2 channel not present in EDF"
+        }
+      }
+    },
+    "gt_stage_comparison": {
+      "available": false
+    }
+  }
+}

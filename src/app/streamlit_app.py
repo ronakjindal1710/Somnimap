@@ -344,7 +344,7 @@ elif screen == SCREENS[8]:
     import tempfile
     from src.inference.edf_loader import inspect_edf
     from src.inference.predictor import predict_from_edf
-    from src.inference.report_export import build_analysis_report_markdown, build_analysis_summary_json
+    from src.inference.report_export import assess_domain_shift, build_analysis_report_markdown, build_analysis_summary_json
     from src.physiology.multimodal import analyze_multimodal_physiology
 
     st.title("9. Raw EDF Upload, Multimodal Physiology & Report Export")
@@ -390,6 +390,10 @@ elif screen == SCREENS[8]:
                     )
 
                 st.subheader("Predictive Outputs — Hypnogram & Uncertainty")
+                domain_shift = assess_domain_shift(info, pred)
+                if domain_shift["high_domain_shift"]:
+                    st.error(domain_shift["summary"])
+
                 u1, u2, u3 = st.columns(3)
                 u1.metric("Mean Calibrated Confidence", f"{float(np.mean(pred['stage_confidence'])):.3f}")
                 u2.metric("Mean Normalized Entropy", f"{float(np.mean(pred['stage_entropy'])):.3f}")
@@ -430,8 +434,8 @@ elif screen == SCREENS[8]:
                 if "cap_events" in pred:
                     st.subheader("Predictive Outputs — CAP Events (Predicted NREM)")
                     st.caption(
-                        "**Model Caveat:** Post-processed CAP detection uses 10 Hz smoothing, min duration >= 2.0 s, and A2 boost. "
-                        "A2 subtype precision/F1 (~0.20–0.23 on validation) remains substantially lower than A1/A3; treat A2 counts as exploratory."
+                        "**Model Caveat:** Post-processed CAP detection uses frozen `val` sweep defaults (`smooth=7`, `min_dur_s=2.5 s`, `merge_gap_s=1.5 s`, `a2_mult=2.0`). "
+                        "Macro NREM CAP rate correlates strongly with ground truth on in-domain `val` (`r = 0.9319`), but per-event precision (`0.4558`) and `A2` subtype F1 (`~0.27–0.29` on `val`) remain exploratory — treat `A2` counts and exact boundaries with caution."
                     )
                     cc1, cc2, cc3, cc4 = st.columns(4)
                     cc1.metric("NREM CAP Rate", f"{pred['cap_rate_nrem']*100:.1f}%")
