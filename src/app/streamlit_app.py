@@ -341,6 +341,7 @@ elif screen == SCREENS[7]:
 # Screen 9: Raw EDF Upload, Multimodal Physiology & Report Export
 # ---------------------------------------------------------------------------
 elif screen == SCREENS[8]:
+    import shutil
     import tempfile
     from src.inference.edf_loader import inspect_edf
     from src.inference.predictor import predict_from_edf
@@ -358,16 +359,19 @@ elif screen == SCREENS[8]:
     stride_opt = st.select_slider("Inference Window Stride (epochs)", options=[5, 10, 20], value=5)
 
     if uploaded_edf is not None:
-        with tempfile.NamedTemporaryFile(suffix=".edf", delete=False) as tmp:
-            tmp.write(uploaded_edf.getbuffer())
-            tmp_path = Path(tmp.name)
-        tmp_txt_path = None
-        if uploaded_txt is not None:
-            with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as ttxt:
-                ttxt.write(uploaded_txt.getbuffer())
-                tmp_txt_path = Path(ttxt.name)
-
+        tmp_path: Path | None = None
+        tmp_txt_path: Path | None = None
         try:
+            with tempfile.NamedTemporaryFile(suffix=".edf", delete=False) as tmp:
+                uploaded_edf.seek(0)
+                shutil.copyfileobj(uploaded_edf, tmp, length=4 * 1024 * 1024)
+                tmp_path = Path(tmp.name)
+            if uploaded_txt is not None:
+                with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as ttxt:
+                    uploaded_txt.seek(0)
+                    shutil.copyfileobj(uploaded_txt, ttxt, length=1024 * 1024)
+                    tmp_txt_path = Path(ttxt.name)
+
             info = inspect_edf(tmp_path)
             st.subheader("Channel Inventory & Compatibility Check")
             c1, c2, c3, c4 = st.columns(4)
@@ -480,6 +484,7 @@ elif screen == SCREENS[8]:
                 d1.download_button("Download Markdown Report (.md)", md_rep, file_name=f"{uploaded_edf.name}_report.md")
                 d2.download_button("Download JSON Summary (.json)", js_rep, file_name=f"{uploaded_edf.name}_summary.json")
         finally:
-            tmp_path.unlink(missing_ok=True)
+            if tmp_path is not None:
+                tmp_path.unlink(missing_ok=True)
             if tmp_txt_path is not None:
                 tmp_txt_path.unlink(missing_ok=True)
