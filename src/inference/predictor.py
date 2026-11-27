@@ -27,11 +27,11 @@ def load_checkpoint_registry() -> dict[str, Any]:
 def decode_cap_probabilities(
     cap_probs: np.ndarray,
     stage_preds: np.ndarray,
-    smooth_frames: int = 5,
+    smooth_frames: int = 7,
     bg_thresh: float = 0.35,
-    a2_mult: float = 1.5,
-    min_dur_s: float = 2.0,
-    merge_gap_s: float = 1.0,
+    a2_mult: float = 2.0,
+    min_dur_s: float = 2.5,
+    merge_gap_s: float = 1.5,
 ) -> tuple[np.ndarray, list[dict[str, Any]]]:
     """Decode [N_ep, 300, 4] CAP probabilities into 10 Hz labels and event list (masked to predicted NREM)."""
     n_ep = cap_probs.shape[0]
