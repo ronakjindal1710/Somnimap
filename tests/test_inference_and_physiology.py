@@ -222,3 +222,21 @@ def test_domain_shift_nominal_on_full_channel_cap() -> None:
     ds = assess_domain_shift(edf_info, predictions)
     assert ds["high_domain_shift"] is False
     assert ds["reasons"] == []
+
+
+def test_predictor_loads_unregistered_no_chan_attn_w10_checkpoint() -> None:
+    from src.inference.predictor import SomniMapPredictor
+
+    cfg = load_config()
+    ckpt_p = Path(cfg["paths"]["project_root"]) / "checkpoints" / "phase4_SomniMapNet_bilstm_w10_E3_w10_best.pt"
+    if not ckpt_p.exists():
+        pytest.skip("phase4_SomniMapNet_bilstm_w10_E3_w10_best.pt not present")
+
+    pred_wrapper = SomniMapPredictor(ckpt_name="phase4_SomniMapNet_bilstm_w10_E3_w10_best.pt", device="cpu", cfg=cfg)
+    assert pred_wrapper.in_channels == 1
+    assert pred_wrapper.chan_attn is False
+    assert pred_wrapper.window_epochs == 10
+    dummy_x = np.zeros((12, 3000, 6), dtype=np.float32)
+    dummy_mask = np.ones(6, dtype=np.float32)
+    out = pred_wrapper.predict_arrays(dummy_x, dummy_mask, stride_epochs=2)
+    assert out["n_epochs"] == 12

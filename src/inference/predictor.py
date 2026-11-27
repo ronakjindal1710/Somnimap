@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -76,17 +77,40 @@ class SomniMapPredictor:
         if not self.ckpt_path.exists():
             raise FileNotFoundError(f"Checkpoint not found: {self.ckpt_path}")
 
-        meta = self.registry.get("checkpoints", {}).get(self.ckpt_name, {})
-        self.in_channels = int(meta.get("in_channels", 6))
-        self.context_type = str(meta.get("context_type", "bilstm"))
-        self.use_cap_head = bool(meta.get("use_cap_head", "dualhead" in self.ckpt_name))
-        self.chan_attn = bool(meta.get("chan_attn", "no_chan_attn" not in self.ckpt_name))
-        self.window_epochs = int(meta.get("window_epochs", 20))
-        self.temperature = float(meta.get("temperature", 1.1757))
-
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = torch.device(device)
+
+        state = torch.load(self.ckpt_path, map_location=self.device, weights_only=False)
+        model_state = state["model_state"]
+        ckpt_cfg = state.get("config") or {}
+        meta = self.registry.get("checkpoints", {}).get(self.ckpt_name, {})
+
+        has_chan_attn = any(k.startswith("chan_attn.") for k in model_state)
+        has_cap_head = any(k.startswith("cap_head.") for k in model_state)
+
+        inferred_in_ch = 6 if (has_chan_attn or any(tag in self.ckpt_name for tag in ("_E5_", "_E6_", "_E7_", "_E8_", "multichan", "dualhead"))) else 1
+        self.in_channels = int(ckpt_cfg.get("in_channels", meta.get("in_channels", inferred_in_ch)))
+
+        if "context_type" in ckpt_cfg:
+            inferred_ctx = str(ckpt_cfg["context_type"])
+        elif "context_type" in meta:
+            inferred_ctx = str(meta["context_type"])
+        elif "_tcn_" in self.ckpt_name or any("tcn" in k.lower() for k in model_state):
+            inferred_ctx = "tcn"
+        elif "_transformer_" in self.ckpt_name or any("transformer" in k.lower() or "pos_enc" in k.lower() for k in model_state):
+            inferred_ctx = "transformer"
+        else:
+            inferred_ctx = "bilstm"
+        self.context_type = inferred_ctx
+
+        self.use_cap_head = bool(ckpt_cfg.get("use_cap_head", meta.get("use_cap_head", has_cap_head)))
+        self.chan_attn = bool(ckpt_cfg.get("use_chan_attn", meta.get("chan_attn", has_chan_attn)))
+
+        w_match = re.search(r"_w(\d+)_", self.ckpt_name)
+        inferred_win = int(w_match.group(1)) if w_match else 20
+        self.window_epochs = int(ckpt_cfg.get("window_epochs", meta.get("window_epochs", inferred_win)))
+        self.temperature = float(ckpt_cfg.get("temperature", meta.get("temperature", 1.1757)))
 
         self.model = SomniMapNet(
             in_channels=self.in_channels,
@@ -96,8 +120,7 @@ class SomniMapPredictor:
         if not self.chan_attn and self.model.chan_attn is not None:
             self.model.chan_attn = None
 
-        state = torch.load(self.ckpt_path, map_location=self.device, weights_only=False)
-        self.model.load_state_dict(state["model_state"])
+        self.model.load_state_dict(model_state)
         self.model.eval()
 
     @torch.no_grad()

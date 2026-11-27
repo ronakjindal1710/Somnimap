@@ -178,10 +178,19 @@ elif screen == SCREENS[3]:
     if not ckpt_files:
         st.warning("No Phase 4 checkpoints found in checkpoints/.")
     else:
-        sel_ckpt = st.selectbox("Select Checkpoint", [c.name for c in ckpt_files])
+        ckpt_names = [c.name for c in ckpt_files]
+        default_ckpt = "phase4_SomniMapNet_bilstm_w20_E8_dualhead_best.pt"
+        default_idx = ckpt_names.index(default_ckpt) if default_ckpt in ckpt_names else 0
+        sel_ckpt = st.selectbox("Select Checkpoint", ckpt_names, index=default_idx)
         val_ids = [r for r in split_data["partitions"]["val"]["record_ids"] if (PROC_DIR / r / "metadata.json").exists()]
         rec_id = st.selectbox("Validation Recording", val_ids)
-        stride_s4 = st.select_slider("Window Stride (epochs)", options=[5, 10, 20], value=5, key="s4_stride")
+        stride_s4 = st.select_slider(
+            "Window Stride (epochs)",
+            options=[1, 2, 5, 10, 20],
+            value=5,
+            key="s4_stride",
+            help="Stride=5 matches the calibrated post-processing sweep defaults; smaller strides increase overlap/runtime.",
+        )
         if st.button("Run Inference"):
             from src.inference.predictor import SomniMapPredictor
 
@@ -394,7 +403,13 @@ elif screen == SCREENS[8]:
 
     uploaded_edf = st.file_uploader("Upload an overnight PSG EDF file (.edf) [Required]", type=["edf"])
     uploaded_txt = st.file_uploader("Optional: Upload RemLogic .txt reference annotations (Ground-Truth Overlay Only)", type=["txt"])
-    stride_opt = st.select_slider("Inference Window Stride (epochs)", options=[5, 10, 20], value=5)
+    stride_opt = st.select_slider(
+        "Inference Window Stride (epochs)",
+        options=[1, 2, 5, 10, 20],
+        value=5,
+        key="s9_stride",
+        help="Stride=5 matches the calibrated post-processing sweep defaults; smaller strides increase overlap/runtime.",
+    )
 
     if uploaded_edf is not None:
         tmp_path: Path | None = None
