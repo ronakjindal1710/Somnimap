@@ -55,15 +55,20 @@ def assess_domain_shift(edf_info: dict[str, Any], predictions: dict[str, Any]) -
     }
 
 
-def build_analysis_report_markdown(result: dict[str, Any], physiology: dict[str, Any]) -> str:
+def build_analysis_report_markdown(
+    result: dict[str, Any],
+    physiology: dict[str, Any],
+    recording_name: str | None = None,
+) -> str:
     """Generate a self-contained Markdown research report with provenance and caveats."""
     info = result["edf_info"]
+    display_name = recording_name or info["file_name"]
     pred = result["predictions"]
     prov = pred["provenance"]
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
     lines = [
-        f"# SomniMap Research Analysis Report — `{info['file_name']}`",
+        f"# SomniMap Research Analysis Report — `{display_name}`",
         "",
         f"**Generated:** {now_str}  ",
         f"**Research Disclaimer:** *SomniMap is an exploratory sleep-signal research tool, not a validated clinical diagnostic device. Predictive outputs must not be interpreted as medical diagnoses.*",
@@ -71,7 +76,7 @@ def build_analysis_report_markdown(result: dict[str, Any], physiology: dict[str,
         "---",
         "",
         "## 1. Recording & Channel Provenance",
-        f"- **File:** `{info['file_name']}` | **Duration:** {info['duration_sec']} s ({pred['n_epochs']} × 30-s epochs)",
+        f"- **File:** `{display_name}` | **Duration:** {info['duration_sec']} s ({pred['n_epochs']} × 30-s epochs)",
         f"- **Header Sampling Rate:** {info['header_sfreq_hz']} Hz | **Loaded Subset Rate:** {result.get('loaded_sfreq', 'N/A')} Hz",
         f"- **Model Checkpoint:** `{prov['checkpoint']}` (`{prov['context_type']}`, `in_channels={prov['in_channels']}`, temperature $T={prov['temperature']}$, stride={prov['stride_epochs']})",
         f"- **Canonical Channels Mapped:** `{list(info['canonical_mapping'].keys())}`",
@@ -150,12 +155,19 @@ def build_analysis_report_markdown(result: dict[str, Any], physiology: dict[str,
     return "\n".join(lines)
 
 
-def build_analysis_summary_json(result: dict[str, Any], physiology: dict[str, Any]) -> str:
+def build_analysis_summary_json(
+    result: dict[str, Any],
+    physiology: dict[str, Any],
+    recording_name: str | None = None,
+) -> str:
     """Serialize lightweight JSON summary (without large raw signal arrays)."""
     pred = result["predictions"]
-    domain_shift = assess_domain_shift(result["edf_info"], pred)
+    edf_info = dict(result["edf_info"])
+    if recording_name:
+        edf_info["file_name"] = recording_name
+    domain_shift = assess_domain_shift(edf_info, pred)
     payload = {
-        "edf_info": result["edf_info"],
+        "edf_info": edf_info,
         "provenance": pred["provenance"],
         "domain_shift_assessment": domain_shift,
         "n_epochs": pred["n_epochs"],

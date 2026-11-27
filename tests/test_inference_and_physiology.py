@@ -181,13 +181,25 @@ def test_domain_shift_warning_triggered_on_ood_sleep_edf() -> None:
     assert any("REM share" in r for r in ds["reasons"])
     assert any("N2 share" in r for r in ds["reasons"])
 
-    md = build_analysis_report_markdown({"edf_info": edf_info, "predictions": predictions, "loaded_sfreq": 100.0}, {"disclaimer": "test", "ecg": {"available": False}, "respiratory": {"available": False}, "spo2": {"available": False}})
+    md = build_analysis_report_markdown(
+        {"edf_info": edf_info, "predictions": predictions, "loaded_sfreq": 100.0},
+        {"disclaimer": "test", "ecg": {"available": False}, "respiratory": {"available": False}, "spo2": {"available": False}},
+        recording_name="custom_upload.edf",
+    )
     assert "HIGH DOMAIN-SHIFT / UNCALIBRATED MONTAGE WARNING" in md
     assert "r = 0.9319" in md
+    assert "custom_upload.edf" in md
 
     import json
-    js = json.loads(build_analysis_summary_json({"edf_info": edf_info, "predictions": predictions}, {"ecg": {"available": False}}))
+    js = json.loads(
+        build_analysis_summary_json(
+            {"edf_info": edf_info, "predictions": predictions},
+            {"ecg": {"available": False}},
+            recording_name="custom_upload.edf",
+        )
+    )
     assert js["domain_shift_assessment"]["high_domain_shift"] is True
+    assert js["edf_info"]["file_name"] == "custom_upload.edf"
 
 
 def test_domain_shift_nominal_on_full_channel_cap() -> None:

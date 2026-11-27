@@ -223,26 +223,66 @@ elif screen == SCREENS[4]:
     st.title("5. CAP Event Detection Evaluation (A1 / A2 / A3)")
     cap_base = load_json_if_exists(str(RESULTS_DIR / "phase5_cap_eval_val.json"))
     stage2 = load_json_if_exists(str(RESULTS_DIR / "stage2_postproc_val.json"))
+    sweep2 = load_json_if_exists(str(RESULTS_DIR / "stage2_cap_sweep_val.json"))
 
-    if stage2 and "cap" in stage2:
+    if sweep2 or (stage2 and "cap" in stage2):
         st.subheader("Calibrated Stage 2 Post-Processing (Validation Split)")
-        cap_modes = stage2["cap"]
-        mode_labels = {
-            "s5_smooth5_bg0.35_a2x1.5_dur2.0_gtNREM": "Post-Processed (Best Overall F1, GT-NREM)",
-            "s5_smooth7_bg0.50_a2x2.0_dur2.0_gtNREM": "Post-Processed (Best A2 F1, GT-NREM)",
-            "s5_smooth7_bg0.50_a2x2.0_dur2.0_predNREM": "Post-Processed (Annotation-Free Pred-NREM)",
-            "baseline_s20_gtNREM": "Uncalibrated Baseline (stride=20, min_dur=0.5s)",
-        }
-        avail_keys = [k for k in mode_labels if k in cap_modes]
-        sel_mode = st.selectbox("Select Evaluation Pipeline", avail_keys, format_func=lambda k: mode_labels[k])
-        sel_data = cap_modes[sel_mode]
+        pipelines: dict[str, dict[str, Any]] = {}
+        if sweep2 and "best_overall_f1" in sweep2:
+            b = sweep2["best_overall_f1"]
+            pipelines["sweep_best_overall"] = {
+                "label": "Frozen Sweep Best Overall F1 (smooth=7, bg=0.35, a2=2.0, dur=2.5s, gap=1.5s)",
+                "overall": {"f1": b["f1"], "precision": b["precision"], "recall": b["recall"], "fp": b["fp"]},
+                "cap_rate_pearson_r": b["cap_rate_r"],
+                "per_subtype": {
+                    "A1": {"f1": b["a1_f1"]},
+                    "A2": {"precision": b["a2_prec"], "recall": b["a2_rec"], "f1": b["a2_f1"]},
+                    "A3": {"f1": b["a3_f1"]},
+                },
+                "caption": f"Frozen val sweep winner (`stage2_cap_sweep_val.json`) | FP={b['fp']} | A1 F1={b['a1_f1']} | A2 F1={b['a2_f1']} | A3 F1={b['a3_f1']}",
+            }
+        if sweep2 and "best_a2_f1" in sweep2:
+            b2 = sweep2["best_a2_f1"]
+            pipelines["sweep_best_a2"] = {
+                "label": "Frozen Sweep Best A2 F1 (smooth=7, bg=0.35, a2=2.5, dur=2.5s, gap=1.5s)",
+                "overall": {"f1": b2["f1"], "precision": b2["precision"], "recall": b2["recall"], "fp": b2["fp"]},
+                "cap_rate_pearson_r": b2["cap_rate_r"],
+                "per_subtype": {
+                    "A1": {"f1": b2["a1_f1"]},
+                    "A2": {"precision": b2["a2_prec"], "recall": b2["a2_rec"], "f1": b2["a2_f1"]},
+                    "A3": {"f1": b2["a3_f1"]},
+                },
+                "caption": f"Frozen val sweep A2-focused (`stage2_cap_sweep_val.json`) | FP={b2['fp']} | A1 F1={b2['a1_f1']} | A2 F1={b2['a2_f1']} | A3 F1={b2['a3_f1']}",
+            }
+        if stage2 and "cap" in stage2:
+            mode_labels = {
+                "s5_smooth5_bg0.35_a2x1.5_dur2.0_gtNREM": "Stage 2 Benchmark (Best Overall F1, GT-NREM)",
+                "s5_smooth7_bg0.50_a2x2.0_dur2.0_gtNREM": "Stage 2 Benchmark (Best A2 F1, GT-NREM)",
+                "s5_smooth7_bg0.50_a2x2.0_dur2.0_predNREM": "Stage 2 Benchmark (Annotation-Free Pred-NREM)",
+                "baseline_s20_gtNREM": "Uncalibrated Baseline (stride=20, min_dur=0.5s)",
+            }
+            for k, lbl in mode_labels.items():
+                if k in stage2["cap"]:
+                    d = stage2["cap"][k]
+                    ov_d = d["overall"]
+                    pipelines[k] = {
+                        "label": lbl,
+                        "overall": ov_d,
+                        "cap_rate_pearson_r": d.get("cap_rate_pearson_r", 0.0),
+                        "per_subtype": d["per_subtype"],
+                        "caption": f"TP={ov_d['tp']} | FP={ov_d['fp']} | FN={ov_d['fn']} | Mean IoU={ov_d['mean_iou']} | Onset err={ov_d['onset_err_s']}s",
+                    }
+
+        avail_keys = list(pipelines.keys())
+        sel_mode = st.selectbox("Select Evaluation Pipeline", avail_keys, format_func=lambda k: pipelines[k]["label"])
+        sel_data = pipelines[sel_mode]
         ov = sel_data["overall"]
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Overall Event F1 (IoU≥0.5)", ov["f1"])
         c2.metric("Precision", ov["precision"])
         c3.metric("Recall", ov["recall"])
-        c4.metric("CAP Rate Pearson r", sel_data.get("cap_rate_pearson_r", 0.0))
-        st.caption(f"TP={ov['tp']} | FP={ov['fp']} | FN={ov['fn']} | Mean IoU={ov['mean_iou']} | Onset err={ov['onset_err_s']}s")
+        c4.metric("CAP Rate Pearson r", sel_data["cap_rate_pearson_r"])
+        st.caption(sel_data["caption"])
 
         sub_rows = [{"Subtype": k, **v} for k, v in sel_data["per_subtype"].items()]
         st.subheader("Per-Subtype CAP Event Metrics (IoU ≥ 0.5)")
@@ -250,20 +290,18 @@ elif screen == SCREENS[4]:
 
         st.subheader("Before vs. After Post-Processing Comparison (Validation)")
         comp_rows = []
-        for k, lbl in mode_labels.items():
-            if k in cap_modes:
-                d = cap_modes[k]
-                comp_rows.append({
-                    "Pipeline": lbl,
-                    "Precision": d["overall"]["precision"],
-                    "Recall": d["overall"]["recall"],
-                    "Overall F1": d["overall"]["f1"],
-                    "FP": d["overall"]["fp"],
-                    "A1 F1": d["per_subtype"]["A1"]["f1"],
-                    "A2 F1": d["per_subtype"]["A2"]["f1"],
-                    "A3 F1": d["per_subtype"]["A3"]["f1"],
-                    "CAP Rate r": d.get("cap_rate_pearson_r"),
-                })
+        for d in pipelines.values():
+            comp_rows.append({
+                "Pipeline": d["label"],
+                "Precision": d["overall"]["precision"],
+                "Recall": d["overall"]["recall"],
+                "Overall F1": d["overall"]["f1"],
+                "FP": d["overall"]["fp"],
+                "A1 F1": d["per_subtype"]["A1"]["f1"],
+                "A2 F1": d["per_subtype"]["A2"]["f1"],
+                "A3 F1": d["per_subtype"]["A3"]["f1"],
+                "CAP Rate r": d["cap_rate_pearson_r"],
+            })
         st.dataframe(pd.DataFrame(comp_rows), use_container_width=True)
     elif cap_base:
         st.caption("Showing Uncalibrated Phase 5 Baseline (`phase5_cap_eval_val.json`).")
@@ -463,9 +501,18 @@ elif screen == SCREENS[8]:
 
                 if not ecg_d.get("available"):
                     st.caption(f"ECG: {ecg_d.get('reason', 'Not available')}")
-                elif ecg_d.get("by_stage"):
+                else:
                     st.write("**Stage-Stratified Cardiac Metrics (ECG):**")
-                    st.dataframe(pd.DataFrame([{"Stage": k, **v} for k, v in ecg_d["by_stage"].items()]), use_container_width=True)
+                    present_stages = [st_name for st_name in STAGE_NAMES if pred["stage_counts"].get(st_name, 0) > 0]
+                    by_st = ecg_d.get("by_stage", {})
+                    ecg_rows = [
+                        {"Stage": st_name, **by_st[st_name]}
+                        if st_name in by_st
+                        else {"Stage": st_name, "mean_hr_bpm": np.nan, "sdnn_ms": np.nan, "rmssd_ms": np.nan}
+                        for st_name in present_stages
+                    ]
+                    if ecg_rows:
+                        st.dataframe(pd.DataFrame(ecg_rows), use_container_width=True)
                     if ecg_d.get("mean_cap_hr_delta_bpm") is not None:
                         st.caption(f"Mean HR shift during predicted CAP vs pre-event baseline: **{ecg_d['mean_cap_hr_delta_bpm']:+.2f} bpm**")
 
@@ -478,8 +525,8 @@ elif screen == SCREENS[8]:
                 if not spo2_d.get("available"):
                     st.caption(f"SpO2: {spo2_d.get('reason', 'Not available')}")
 
-                md_rep = build_analysis_report_markdown(res, phys)
-                js_rep = build_analysis_summary_json(res, phys)
+                md_rep = build_analysis_report_markdown(res, phys, recording_name=uploaded_edf.name)
+                js_rep = build_analysis_summary_json(res, phys, recording_name=uploaded_edf.name)
                 d1, d2 = st.columns(2)
                 d1.download_button("Download Markdown Report (.md)", md_rep, file_name=f"{uploaded_edf.name}_report.md")
                 d2.download_button("Download JSON Summary (.json)", js_rep, file_name=f"{uploaded_edf.name}_summary.json")
