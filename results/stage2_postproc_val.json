@@ -1,0 +1,422 @@
+{
+  "stage": {
+    "baseline_s20_argmax": {
+      "macro_f1": 0.7798,
+      "balanced_acc": 0.7817,
+      "cohen_kappa": 0.787,
+      "accuracy": 0.8395,
+      "N1_f1": 0.4762,
+      "N1_prec": 0.456,
+      "N1_rec": 0.4983
+    },
+    "overlap_s5_argmax": {
+      "macro_f1": 0.785,
+      "balanced_acc": 0.7847,
+      "cohen_kappa": 0.7942,
+      "accuracy": 0.8451,
+      "N1_f1": 0.4822,
+      "N1_prec": 0.4732,
+      "N1_rec": 0.4916
+    },
+    "overlap_s5_viterbi_0.25": {
+      "macro_f1": 0.7818,
+      "balanced_acc": 0.7769,
+      "cohen_kappa": 0.7935,
+      "accuracy": 0.8448,
+      "N1_f1": 0.467,
+      "N1_prec": 0.488,
+      "N1_rec": 0.4476
+    },
+    "overlap_s5_viterbi_0.50": {
+      "macro_f1": 0.7786,
+      "balanced_acc": 0.7703,
+      "cohen_kappa": 0.7914,
+      "accuracy": 0.8434,
+      "N1_f1": 0.4588,
+      "N1_prec": 0.5147,
+      "N1_rec": 0.4139
+    },
+    "overlap_s5_viterbi_1.00": {
+      "macro_f1": 0.7684,
+      "balanced_acc": 0.7565,
+      "cohen_kappa": 0.7851,
+      "accuracy": 0.8389,
+      "N1_f1": 0.4205,
+      "N1_prec": 0.5199,
+      "N1_rec": 0.353
+    }
+  },
+  "cap": {
+    "baseline_s20_gtNREM": {
+      "overall": {
+        "tp": 2398,
+        "fp": 6498,
+        "fn": 4767,
+        "precision": 0.2696,
+        "recall": 0.3347,
+        "f1": 0.2986,
+        "mean_iou": 0.7646,
+        "onset_err_s": 0.9114,
+        "offset_err_s": 1.3524,
+        "dur_err_s": 1.9452
+      },
+      "per_subtype": {
+        "A1": {
+          "tp": 1156,
+          "fp": 2603,
+          "fn": 2219,
+          "precision": 0.3075,
+          "recall": 0.3425,
+          "f1": 0.3241,
+          "mean_iou": 0.7394,
+          "onset_err_s": 0.7058,
+          "offset_err_s": 0.8843,
+          "dur_err_s": 1.3265
+        },
+        "A2": {
+          "tp": 98,
+          "fp": 1761,
+          "fn": 1545,
+          "precision": 0.0527,
+          "recall": 0.0596,
+          "f1": 0.056,
+          "mean_iou": 0.6333,
+          "onset_err_s": 1.1918,
+          "offset_err_s": 1.2643,
+          "dur_err_s": 2.2949
+        },
+        "A3": {
+          "tp": 1144,
+          "fp": 2134,
+          "fn": 1003,
+          "precision": 0.349,
+          "recall": 0.5328,
+          "f1": 0.4218,
+          "mean_iou": 0.8014,
+          "onset_err_s": 1.0951,
+          "offset_err_s": 1.8329,
+          "dur_err_s": 2.5404
+        }
+      },
+      "cap_rate_pearson_r": 0.8827
+    },
+    "s5_smooth5_dur2.0_gap1.0_gtNREM": {
+      "overall": {
+        "tp": 2421,
+        "fp": 3092,
+        "fn": 4744,
+        "precision": 0.4391,
+        "recall": 0.3379,
+        "f1": 0.3819,
+        "mean_iou": 0.7655,
+        "onset_err_s": 0.9451,
+        "offset_err_s": 1.4028,
+        "dur_err_s": 2.0273
+      },
+      "per_subtype": {
+        "A1": {
+          "tp": 1158,
+          "fp": 1411,
+          "fn": 2217,
+          "precision": 0.4508,
+          "recall": 0.3431,
+          "f1": 0.3896,
+          "mean_iou": 0.7409,
+          "onset_err_s": 0.7275,
+          "offset_err_s": 0.8767,
+          "dur_err_s": 1.3495
+        },
+        "A2": {
+          "tp": 105,
+          "fp": 547,
+          "fn": 1538,
+          "precision": 0.161,
+          "recall": 0.0639,
+          "f1": 0.0915,
+          "mean_iou": 0.6461,
+          "onset_err_s": 1.1457,
+          "offset_err_s": 1.3333,
+          "dur_err_s": 2.3229
+        },
+        "A3": {
+          "tp": 1158,
+          "fp": 1134,
+          "fn": 989,
+          "precision": 0.5052,
+          "recall": 0.5394,
+          "f1": 0.5217,
+          "mean_iou": 0.8008,
+          "onset_err_s": 1.1444,
+          "offset_err_s": 1.9352,
+          "dur_err_s": 2.6784
+        }
+      },
+      "cap_rate_pearson_r": 0.8813
+    },
+    "s5_smooth5_bg0.35_a2x1.5_dur2.0_gtNREM": {
+      "overall": {
+        "tp": 2856,
+        "fp": 4163,
+        "fn": 4309,
+        "precision": 0.4069,
+        "recall": 0.3986,
+        "f1": 0.4027,
+        "mean_iou": 0.7686,
+        "onset_err_s": 0.9613,
+        "offset_err_s": 1.3102,
+        "dur_err_s": 1.8947
+      },
+      "per_subtype": {
+        "A1": {
+          "tp": 1332,
+          "fp": 1767,
+          "fn": 2043,
+          "precision": 0.4298,
+          "recall": 0.3947,
+          "f1": 0.4115,
+          "mean_iou": 0.7539,
+          "onset_err_s": 0.7174,
+          "offset_err_s": 0.8499,
+          "dur_err_s": 1.258
+        },
+        "A2": {
+          "tp": 318,
+          "fp": 1240,
+          "fn": 1325,
+          "precision": 0.2041,
+          "recall": 0.1935,
+          "f1": 0.1987,
+          "mean_iou": 0.707,
+          "onset_err_s": 0.8959,
+          "offset_err_s": 1.2906,
+          "dur_err_s": 1.8167
+        },
+        "A3": {
+          "tp": 1206,
+          "fp": 1156,
+          "fn": 941,
+          "precision": 0.5106,
+          "recall": 0.5617,
+          "f1": 0.5349,
+          "mean_iou": 0.8011,
+          "onset_err_s": 1.248,
+          "offset_err_s": 1.8236,
+          "dur_err_s": 2.6186
+        }
+      },
+      "cap_rate_pearson_r": 0.8835
+    },
+    "s5_smooth5_bg0.45_a2x1.5_dur2.0_gtNREM": {
+      "overall": {
+        "tp": 2639,
+        "fp": 3688,
+        "fn": 4526,
+        "precision": 0.4171,
+        "recall": 0.3683,
+        "f1": 0.3912,
+        "mean_iou": 0.7669,
+        "onset_err_s": 0.9403,
+        "offset_err_s": 1.3561,
+        "dur_err_s": 1.9431
+      },
+      "per_subtype": {
+        "A1": {
+          "tp": 1188,
+          "fp": 1496,
+          "fn": 2187,
+          "precision": 0.4426,
+          "recall": 0.352,
+          "f1": 0.3921,
+          "mean_iou": 0.7464,
+          "onset_err_s": 0.7256,
+          "offset_err_s": 0.8754,
+          "dur_err_s": 1.3141
+        },
+        "A2": {
+          "tp": 290,
+          "fp": 1112,
+          "fn": 1353,
+          "precision": 0.2068,
+          "recall": 0.1765,
+          "f1": 0.1905,
+          "mean_iou": 0.7037,
+          "onset_err_s": 0.8838,
+          "offset_err_s": 1.281,
+          "dur_err_s": 1.851
+        },
+        "A3": {
+          "tp": 1161,
+          "fp": 1080,
+          "fn": 986,
+          "precision": 0.5181,
+          "recall": 0.5408,
+          "f1": 0.5292,
+          "mean_iou": 0.8038,
+          "onset_err_s": 1.1741,
+          "offset_err_s": 1.8667,
+          "dur_err_s": 2.6097
+        }
+      },
+      "cap_rate_pearson_r": 0.8872
+    },
+    "s5_smooth7_bg0.50_a2x2.0_dur2.0_gtNREM": {
+      "overall": {
+        "tp": 2535,
+        "fp": 3480,
+        "fn": 4630,
+        "precision": 0.4214,
+        "recall": 0.3538,
+        "f1": 0.3847,
+        "mean_iou": 0.7614,
+        "onset_err_s": 0.9494,
+        "offset_err_s": 1.3985,
+        "dur_err_s": 2.0103
+      },
+      "per_subtype": {
+        "A1": {
+          "tp": 1037,
+          "fp": 1220,
+          "fn": 2338,
+          "precision": 0.4595,
+          "recall": 0.3073,
+          "f1": 0.3683,
+          "mean_iou": 0.7374,
+          "onset_err_s": 0.7603,
+          "offset_err_s": 0.8903,
+          "dur_err_s": 1.3819
+        },
+        "A2": {
+          "tp": 382,
+          "fp": 1270,
+          "fn": 1261,
+          "precision": 0.2312,
+          "recall": 0.2325,
+          "f1": 0.2319,
+          "mean_iou": 0.7151,
+          "onset_err_s": 0.8055,
+          "offset_err_s": 1.3026,
+          "dur_err_s": 1.7935
+        },
+        "A3": {
+          "tp": 1116,
+          "fp": 990,
+          "fn": 1031,
+          "precision": 0.5299,
+          "recall": 0.5198,
+          "f1": 0.5248,
+          "mean_iou": 0.7996,
+          "onset_err_s": 1.1745,
+          "offset_err_s": 1.9036,
+          "dur_err_s": 2.6685
+        }
+      },
+      "cap_rate_pearson_r": 0.8869
+    },
+    "s5_smooth7_bg0.55_a2x2.0_dur2.0_gtNREM": {
+      "overall": {
+        "tp": 2400,
+        "fp": 3302,
+        "fn": 4765,
+        "precision": 0.4209,
+        "recall": 0.335,
+        "f1": 0.373,
+        "mean_iou": 0.7606,
+        "onset_err_s": 0.9355,
+        "offset_err_s": 1.4256,
+        "dur_err_s": 2.0393
+      },
+      "per_subtype": {
+        "A1": {
+          "tp": 961,
+          "fp": 1115,
+          "fn": 2414,
+          "precision": 0.4629,
+          "recall": 0.2847,
+          "f1": 0.3526,
+          "mean_iou": 0.733,
+          "onset_err_s": 0.7443,
+          "offset_err_s": 0.9159,
+          "dur_err_s": 1.4045
+        },
+        "A2": {
+          "tp": 361,
+          "fp": 1205,
+          "fn": 1282,
+          "precision": 0.2305,
+          "recall": 0.2197,
+          "f1": 0.225,
+          "mean_iou": 0.7106,
+          "onset_err_s": 0.7773,
+          "offset_err_s": 1.3357,
+          "dur_err_s": 1.8177
+        },
+        "A3": {
+          "tp": 1078,
+          "fp": 982,
+          "fn": 1069,
+          "precision": 0.5233,
+          "recall": 0.5021,
+          "f1": 0.5125,
+          "mean_iou": 0.802,
+          "onset_err_s": 1.159,
+          "offset_err_s": 1.9101,
+          "dur_err_s": 2.6795
+        }
+      },
+      "cap_rate_pearson_r": 0.8857
+    },
+    "s5_smooth7_bg0.50_a2x2.0_dur2.0_predNREM": {
+      "overall": {
+        "tp": 2411,
+        "fp": 3644,
+        "fn": 4754,
+        "precision": 0.3982,
+        "recall": 0.3365,
+        "f1": 0.3648,
+        "mean_iou": 0.7597,
+        "onset_err_s": 0.9311,
+        "offset_err_s": 1.3609,
+        "dur_err_s": 1.9434
+      },
+      "per_subtype": {
+        "A1": {
+          "tp": 1036,
+          "fp": 1219,
+          "fn": 2339,
+          "precision": 0.4594,
+          "recall": 0.307,
+          "f1": 0.368,
+          "mean_iou": 0.7373,
+          "onset_err_s": 0.7608,
+          "offset_err_s": 0.8903,
+          "dur_err_s": 1.3826
+        },
+        "A2": {
+          "tp": 378,
+          "fp": 1294,
+          "fn": 1265,
+          "precision": 0.2261,
+          "recall": 0.2301,
+          "f1": 0.2281,
+          "mean_iou": 0.7154,
+          "onset_err_s": 0.8063,
+          "offset_err_s": 1.2963,
+          "dur_err_s": 1.7868
+        },
+        "A3": {
+          "tp": 997,
+          "fp": 1131,
+          "fn": 1150,
+          "precision": 0.4685,
+          "recall": 0.4644,
+          "f1": 0.4664,
+          "mean_iou": 0.7999,
+          "onset_err_s": 1.1553,
+          "offset_err_s": 1.8744,
+          "dur_err_s": 2.5856
+        }
+      },
+      "cap_rate_pearson_r": 0.91
+    }
+  }
+}

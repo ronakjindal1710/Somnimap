@@ -154,6 +154,39 @@ def compute_event_offsets_sec(edf_start_iso: str, events: list[dict[str, Any]]) 
     return offsets
 
 
+def align_annotations_to_epochs(
+    parsed: dict[str, Any],
+    edf_start_iso: str,
+    n_epochs: int,
+    epoch_sec: int = 30,
+    cap_hz: int = 10,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Align parsed .txt sleep-stage and CAP events to 30-s epochs and 10 Hz frames."""
+    labels_stage = np.full(n_epochs, -1, dtype=np.int8)
+    sleep_events = parsed.get("sleep_events", [])
+    sleep_offsets = compute_event_offsets_sec(edf_start_iso, sleep_events)
+    for ev, off in zip(sleep_events, sleep_offsets):
+        ep_idx = int(round(off / float(epoch_sec)))
+        if 0 <= ep_idx < n_epochs:
+            labels_stage[ep_idx] = int(ev["stage_id"])
+
+    cap_steps_per_epoch = cap_hz * epoch_sec
+    labels_cap = np.zeros((n_epochs * cap_steps_per_epoch,), dtype=np.int8)
+    cap_subtype_map = {"A1": 1, "A2": 2, "A3": 3}
+    cap_events = parsed.get("cap_events", [])
+    cap_offsets = compute_event_offsets_sec(edf_start_iso, cap_events)
+    for ev, off in zip(cap_events, cap_offsets):
+        s_idx = int(round(off * cap_hz))
+        e_idx = int(round((off + float(ev["duration_s"])) * cap_hz))
+        if e_idx <= 0 or s_idx >= len(labels_cap):
+            continue
+        s_clip = max(0, s_idx)
+        e_clip = min(len(labels_cap), max(s_clip + 1, e_idx))
+        labels_cap[s_clip:e_clip] = cap_subtype_map.get(ev["subtype"], 0)
+
+    return labels_stage, labels_cap.reshape(n_epochs, cap_steps_per_epoch)
+
+
 def process_single_record(
     rec_id: str,
     edf_path: Path,
@@ -183,6 +216,7 @@ def process_single_record(
     include_chs = sorted({c for ch in needed_raw_chs for c in (ch, ch.rsplit("-", 1)[0])})
 
     raw = mne.io.read_raw_edf(str(edf_path), include=include_chs, preload=True, verbose="ERROR")
+    common_sfreq = float(raw.info["sfreq"])  # use sfreq of loaded subset, not excluded high-rate channels
     data_dict = {ch.strip(): raw.get_data(picks=[ch])[0] for ch in raw.ch_names}
     raw.close()
 
@@ -375,5 +409,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=None, help="Process only first N records for testing")
     args = parser.parse_args()
-    cfg_path = Path("C:/Users/admin/Desktop/Somnimap/experiments/configs/base_config.yaml")
+    from src.config import get_default_config_path
+    cfg_path = get_default_config_path()
     run_preprocessing(cfg_path, limit=args.limit)

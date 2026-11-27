@@ -1,12 +1,13 @@
 # SomniMap Base Configuration (Locked Decisions)
+# Repo-relative paths resolve automatically via src/config.py.
 paths:
-  raw_dataset_dir: "C:/Users/admin/Desktop/Ronak Jindal/Somnimap/dataset"
-  project_root: "C:/Users/admin/Desktop/Somnimap"
-  manifest_csv: "C:/Users/admin/Desktop/Somnimap/data/manifest.csv"
-  annotation_coverage_csv: "C:/Users/admin/Desktop/Somnimap/data/annotation_coverage.csv"
-  split_manifest_json: "C:/Users/admin/Desktop/Somnimap/data/splits/split_manifest.json"
-  processed_dir: "C:/Users/admin/Desktop/Somnimap/data/processed"
-  mlflow_tracking_uri: "sqlite:///C:/Users/admin/Desktop/Somnimap/mlflow.db"
+  raw_dataset_dir: "C:/Users/prave/OneDrive/Desktop/Somnimap/dataset"
+  project_root: "."
+  manifest_csv: "data/manifest.csv"
+  annotation_coverage_csv: "data/annotation_coverage.csv"
+  split_manifest_json: "data/splits/split_manifest.json"
+  processed_dir: "data/processed"
+  mlflow_tracking_uri: "sqlite:///mlflow.db"
 
 preprocessing:
   target_sfreq_hz: 100

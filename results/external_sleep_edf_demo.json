@@ -1,0 +1,47 @@
+{
+  "dataset": "PhysioNet Sleep-EDF Expanded (External Unseen Demo)",
+  "domain_shift_notes": [
+    "Sleep-EDF uses Fpz-Cz / Pz-Oz EEG (100 Hz) and horizontal EOG + submental EMG, whereas SomniMapNet was trained on CAP Sleep C4-A1/F4-C4/C4-P4/Fp2-F4 + ROC-LOC + EMG1-EMG2 (3/6 canonical channels absent and masked to 0).",
+    "Sleep-EDF does not contain CAP A1/A2/A3 ground-truth labels; CAP outputs are exploratory only."
+  ],
+  "aggregate_sleep_staging": {
+    "n_scored_epochs": 8256,
+    "accuracy": 0.3166,
+    "balanced_acc": 0.6302,
+    "macro_f1": 0.4638,
+    "cohen_kappa": 0.2176,
+    "N1_f1": 0.532
+  },
+  "per_recording": [
+    {
+      "psg_file": "SC4001E0-PSG.edf",
+      "n_scored_epochs": 2650,
+      "accuracy": 0.3642,
+      "macro_f1": 0.5029,
+      "balanced_acc": 0.6243,
+      "cohen_kappa": 0.2293,
+      "N1_f1": 0.4304,
+      "cap_rate_nrem": 0.0268
+    },
+    {
+      "psg_file": "SC4011E0-PSG.edf",
+      "n_scored_epochs": 2802,
+      "accuracy": 0.3565,
+      "macro_f1": 0.5267,
+      "balanced_acc": 0.6836,
+      "cohen_kappa": 0.2592,
+      "N1_f1": 0.6129,
+      "cap_rate_nrem": 0.0128
+    },
+    {
+      "psg_file": "SC4021E0-PSG.edf",
+      "n_scored_epochs": 2804,
+      "accuracy": 0.2318,
+      "macro_f1": 0.3492,
+      "balanced_acc": 0.5722,
+      "cohen_kappa": 0.1592,
+      "N1_f1": 0.4762,
+      "cap_rate_nrem": 0.0823
+    }
+  ]
+}

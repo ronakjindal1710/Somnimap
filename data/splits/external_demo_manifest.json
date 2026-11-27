@@ -1,0 +1,79 @@
+{
+  "recordings": [
+    {
+      "subject_idx": 0,
+      "psg_file": "SC4001E0-PSG.edf",
+      "hypnogram_file": "SC4001EC-Hypnogram.edf",
+      "duration_sec": 79500.0,
+      "header_sfreq_hz": 100.0,
+      "canonical_mapping": {
+        "EOG": [
+          "EOG horizontal",
+          null
+        ],
+        "EMG_CHIN": [
+          "EMG submental",
+          null
+        ],
+        "EEG_C4_A1": [
+          "EEG Fpz-Cz",
+          null
+        ]
+      },
+      "warnings": [
+        "Primary CAP EEG (C4-A1/C3-A2) absent; mapped 'EEG Fpz-Cz' as primary EEG.",
+        "Missing canonical channels (masked to 0, not fabricated): ['EEG_F4_C4', 'EEG_C4_P4', 'EEG_FP2_F4']"
+      ]
+    },
+    {
+      "subject_idx": 1,
+      "psg_file": "SC4011E0-PSG.edf",
+      "hypnogram_file": "SC4011EH-Hypnogram.edf",
+      "duration_sec": 84060.0,
+      "header_sfreq_hz": 100.0,
+      "canonical_mapping": {
+        "EOG": [
+          "EOG horizontal",
+          null
+        ],
+        "EMG_CHIN": [
+          "EMG submental",
+          null
+        ],
+        "EEG_C4_A1": [
+          "EEG Fpz-Cz",
+          null
+        ]
+      },
+      "warnings": [
+        "Primary CAP EEG (C4-A1/C3-A2) absent; mapped 'EEG Fpz-Cz' as primary EEG.",
+        "Missing canonical channels (masked to 0, not fabricated): ['EEG_F4_C4', 'EEG_C4_P4', 'EEG_FP2_F4']"
+      ]
+    },
+    {
+      "subject_idx": 2,
+      "psg_file": "SC4021E0-PSG.edf",
+      "hypnogram_file": "SC4021EH-Hypnogram.edf",
+      "duration_sec": 84120.0,
+      "header_sfreq_hz": 100.0,
+      "canonical_mapping": {
+        "EOG": [
+          "EOG horizontal",
+          null
+        ],
+        "EMG_CHIN": [
+          "EMG submental",
+          null
+        ],
+        "EEG_C4_A1": [
+          "EEG Fpz-Cz",
+          null
+        ]
+      },
+      "warnings": [
+        "Primary CAP EEG (C4-A1/C3-A2) absent; mapped 'EEG Fpz-Cz' as primary EEG.",
+        "Missing canonical channels (masked to 0, not fabricated): ['EEG_F4_C4', 'EEG_C4_P4', 'EEG_FP2_F4']"
+      ]
+    }
+  ]
+}

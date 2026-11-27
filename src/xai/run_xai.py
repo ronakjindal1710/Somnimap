@@ -74,9 +74,8 @@ def main() -> None:
     parser.add_argument("--window_epochs", type=int, default=20)
     args = parser.parse_args()
 
-    cfg_path = Path("C:/Users/admin/Desktop/Somnimap/experiments/configs/base_config.yaml")
-    with open(cfg_path, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
+    from src.config import load_config
+    cfg = load_config()
 
     proc_dir = Path(cfg["paths"]["processed_dir"])
     proj_root = Path(cfg["paths"]["project_root"])

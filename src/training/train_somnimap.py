@@ -128,9 +128,8 @@ def train_somnimap(
     cfg: dict | None = None,
 ) -> dict:
     if cfg is None:
-        cfg_path = Path("C:/Users/admin/Desktop/Somnimap/experiments/configs/base_config.yaml")
-        with open(cfg_path, encoding="utf-8") as f:
-            cfg = yaml.safe_load(f)
+        from src.config import load_config
+        cfg = load_config()
 
     random.seed(42); np.random.seed(42); torch.manual_seed(42)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -307,9 +306,8 @@ def main() -> None:
     parser.add_argument("--out_csv", type=str, default="")
     args = parser.parse_args()
 
-    cfg_path = Path("C:/Users/admin/Desktop/Somnimap/experiments/configs/base_config.yaml")
-    with open(cfg_path, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
+    from src.config import load_config
+    cfg = load_config()
 
     row = train_somnimap(
         context_type=args.context_type,

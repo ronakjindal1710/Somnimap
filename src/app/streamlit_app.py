@@ -19,9 +19,9 @@ if str(REPO_ROOT) not in sys.path:
 
 st.set_page_config(page_title="SomniMap — Sleep & CAP Analytics", layout="wide", page_icon="🌙")
 
-CFG_PATH = REPO_ROOT / "experiments" / "configs" / "base_config.yaml"
-with open(CFG_PATH, encoding="utf-8") as f:
-    CFG = yaml.safe_load(f)
+from src.config import load_config
+
+CFG = load_config()
 
 PROJ_ROOT = Path(CFG["paths"]["project_root"])
 PROC_DIR = Path(CFG["paths"]["processed_dir"])
@@ -61,6 +61,7 @@ SCREENS = [
     "6. Explainability (Grad-CAM & IG)",
     "7. Calibration & Reliability",
     "8. Final Locked Test Report",
+    "9. Raw EDF Upload, Multimodal & Report",
 ]
 screen = st.sidebar.radio("Navigation", SCREENS)
 
@@ -180,48 +181,36 @@ elif screen == SCREENS[3]:
         sel_ckpt = st.selectbox("Select Checkpoint", [c.name for c in ckpt_files])
         val_ids = [r for r in split_data["partitions"]["val"]["record_ids"] if (PROC_DIR / r / "metadata.json").exists()]
         rec_id = st.selectbox("Validation Recording", val_ids)
+        stride_s4 = st.select_slider("Window Stride (epochs)", options=[5, 10, 20], value=5, key="s4_stride")
         if st.button("Run Inference"):
-            import torch
-            from src.data.dataset import SomniMapSequenceDataset
-            from src.models.somnimap_net import SomniMapNet
+            from src.inference.predictor import SomniMapPredictor
 
-            ckpt_path = PROJ_ROOT / "checkpoints" / sel_ckpt
-            is_multi = "multichan" in sel_ckpt or "dualhead" in sel_ckpt or "focal" in sel_ckpt or "no_chan_attn" in sel_ckpt
-            has_cap = "dualhead" in sel_ckpt
-            ctx = "bilstm"
-            for c_opt in ("tcn", "transformer", "bilstm"):
-                if c_opt in sel_ckpt:
-                    ctx = c_opt
-                    break
-            mode = "multi_channel" if is_multi else "single_eeg"
-            in_ch = 6 if is_multi else 1
+            rec_dir = PROC_DIR / rec_id
+            meta = json.loads((rec_dir / "metadata.json").read_text(encoding="utf-8"))
+            epochs_full = np.load(rec_dir / "epochs.npy")
+            y_gt = np.load(rec_dir / "labels_stage.npy")
+            ch_mask = np.array(meta["channel_mask"], dtype=np.float32)
 
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            model = SomniMapNet(in_channels=in_ch, context_type=ctx, use_cap_head=has_cap).to(device)
-            if "no_chan_attn" in sel_ckpt:
-                model.chan_attn = None
-            state = torch.load(ckpt_path, map_location=device, weights_only=False)
-            model.load_state_dict(state["model_state"])
-            model.eval()
+            model_epochs = epochs_full[:, :, :6].copy()
+            model_ch_mask = ch_mask[:6].copy()
+            if model_ch_mask[0] == 0 and ch_mask[6] == 1:
+                model_epochs[:, :, 0] = epochs_full[:, :, 6]
+                model_ch_mask[0] = 1
 
-            ds = SomniMapSequenceDataset(PROC_DIR, [rec_id], window_epochs=20, stride_epochs=20, mode=mode)
-            preds, gts = [], []
-            with torch.no_grad():
-                for i in range(len(ds)):
-                    b = ds[i]
-                    x = b["x"].unsqueeze(0).to(device)
-                    cm = b["ch_mask"].unsqueeze(0).to(device)
-                    lg = model(x, ch_mask=cm)["stage_logits"][0].argmax(dim=-1).cpu().numpy()
-                    preds.append(lg)
-                    gts.append(b["y_stage"].numpy())
-            y_pr = np.concatenate(preds)
-            y_gt = np.concatenate(gts)
+            predictor = SomniMapPredictor(ckpt_name=sel_ckpt, cfg=CFG)
+            pred = predictor.predict_arrays(model_epochs, model_ch_mask, stride_epochs=stride_s4)
+            y_pr = pred["stage_preds"]
             mask = y_gt >= 0
             acc = float((y_pr[mask] == y_gt[mask]).mean())
-            st.metric("Recording Epoch Accuracy", f"{acc*100:.2f}%")
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Recording Epoch Accuracy", f"{acc*100:.2f}%")
+            c2.metric("Mean Confidence", f"{float(np.mean(pred['stage_confidence'])):.3f}")
+            c3.metric("Low-Conf Epochs (<0.55)", f"{len(pred['low_confidence_epochs'])}/{len(y_pr)}")
+            st.caption(f"Provenance: `{pred['provenance']['checkpoint']}` | T={pred['provenance']['temperature']} | stride={stride_s4}")
+
             fig = go.Figure()
-            fig.add_trace(go.Scatter(y=np.where(mask, y_gt, np.nan), name="Ground Truth", line_shape="hv"))
-            fig.add_trace(go.Scatter(y=y_pr, name="Predicted", line_shape="hv", line=dict(dash="dot")))
+            fig.add_trace(go.Scatter(y=np.where(mask, y_gt, np.nan), name="Ground Truth (Reference)", line_shape="hv"))
+            fig.add_trace(go.Scatter(y=y_pr, name="Predicted (SomniMapNet)", line_shape="hv", line=dict(dash="dot")))
             fig.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
             fig.update_layout(title=f"Hypnogram Comparison — {rec_id}", height=340)
             st.plotly_chart(fig, use_container_width=True)
@@ -232,24 +221,66 @@ elif screen == SCREENS[3]:
 # ---------------------------------------------------------------------------
 elif screen == SCREENS[4]:
     st.title("5. CAP Event Detection Evaluation (A1 / A2 / A3)")
-    cap_eval = load_json_if_exists(str(RESULTS_DIR / "phase5_cap_eval_val.json"))
-    if not cap_eval:
-        st.info("Phase 5 CAP evaluation results not yet generated.")
-    else:
-        ov = cap_eval["overall"]
+    cap_base = load_json_if_exists(str(RESULTS_DIR / "phase5_cap_eval_val.json"))
+    stage2 = load_json_if_exists(str(RESULTS_DIR / "stage2_postproc_val.json"))
+
+    if stage2 and "cap" in stage2:
+        st.subheader("Calibrated Stage 2 Post-Processing (Validation Split)")
+        cap_modes = stage2["cap"]
+        mode_labels = {
+            "s5_smooth5_bg0.35_a2x1.5_dur2.0_gtNREM": "Post-Processed (Best Overall F1, GT-NREM)",
+            "s5_smooth7_bg0.50_a2x2.0_dur2.0_gtNREM": "Post-Processed (Best A2 F1, GT-NREM)",
+            "s5_smooth7_bg0.50_a2x2.0_dur2.0_predNREM": "Post-Processed (Annotation-Free Pred-NREM)",
+            "baseline_s20_gtNREM": "Uncalibrated Baseline (stride=20, min_dur=0.5s)",
+        }
+        avail_keys = [k for k in mode_labels if k in cap_modes]
+        sel_mode = st.selectbox("Select Evaluation Pipeline", avail_keys, format_func=lambda k: mode_labels[k])
+        sel_data = cap_modes[sel_mode]
+        ov = sel_data["overall"]
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("Overall Event F1 (IoU≥0.5)", ov["f1"])
         c2.metric("Precision", ov["precision"])
         c3.metric("Recall", ov["recall"])
-        c4.metric("CAP Rate Pearson r", cap_eval.get("cap_rate_pearson_r", 0.0))
+        c4.metric("CAP Rate Pearson r", sel_data.get("cap_rate_pearson_r", 0.0))
+        st.caption(f"TP={ov['tp']} | FP={ov['fp']} | FN={ov['fn']} | Mean IoU={ov['mean_iou']} | Onset err={ov['onset_err_s']}s")
 
-        sub_rows = [{"Subtype": k, **v} for k, v in cap_eval["per_subtype"].items()]
+        sub_rows = [{"Subtype": k, **v} for k, v in sel_data["per_subtype"].items()]
         st.subheader("Per-Subtype CAP Event Metrics (IoU ≥ 0.5)")
         st.dataframe(pd.DataFrame(sub_rows), use_container_width=True)
 
-        ex_img = RESULTS_DIR / "phase5_cap_examples_val.png"
-        if ex_img.exists():
-            st.image(str(ex_img), caption="CAP Event Detection Timeline Examples")
+        st.subheader("Before vs. After Post-Processing Comparison (Validation)")
+        comp_rows = []
+        for k, lbl in mode_labels.items():
+            if k in cap_modes:
+                d = cap_modes[k]
+                comp_rows.append({
+                    "Pipeline": lbl,
+                    "Precision": d["overall"]["precision"],
+                    "Recall": d["overall"]["recall"],
+                    "Overall F1": d["overall"]["f1"],
+                    "FP": d["overall"]["fp"],
+                    "A1 F1": d["per_subtype"]["A1"]["f1"],
+                    "A2 F1": d["per_subtype"]["A2"]["f1"],
+                    "A3 F1": d["per_subtype"]["A3"]["f1"],
+                    "CAP Rate r": d.get("cap_rate_pearson_r"),
+                })
+        st.dataframe(pd.DataFrame(comp_rows), use_container_width=True)
+    elif cap_base:
+        st.caption("Showing Uncalibrated Phase 5 Baseline (`phase5_cap_eval_val.json`).")
+        ov = cap_base["overall"]
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Overall Event F1 (IoU≥0.5)", ov["f1"])
+        c2.metric("Precision", ov["precision"])
+        c3.metric("Recall", ov["recall"])
+        c4.metric("CAP Rate Pearson r", cap_base.get("cap_rate_pearson_r", 0.0))
+        sub_rows = [{"Subtype": k, **v} for k, v in cap_base["per_subtype"].items()]
+        st.dataframe(pd.DataFrame(sub_rows), use_container_width=True)
+    else:
+        st.info("Phase 5 CAP evaluation results not yet generated.")
+
+    ex_img = RESULTS_DIR / "phase5_cap_examples_val.png"
+    if ex_img.exists():
+        st.image(str(ex_img), caption="CAP Event Detection Timeline Examples (Phase 5 Baseline)")
 
 
 # ---------------------------------------------------------------------------
@@ -304,3 +335,147 @@ elif screen == SCREENS[7]:
         test_cm = RESULTS_DIR / "confusion_matrices" / "phase8_test_locked_cm.png"
         if test_cm.exists():
             st.image(str(test_cm), width=540)
+
+
+# ---------------------------------------------------------------------------
+# Screen 9: Raw EDF Upload, Multimodal Physiology & Report Export
+# ---------------------------------------------------------------------------
+elif screen == SCREENS[8]:
+    import tempfile
+    from src.inference.edf_loader import inspect_edf
+    from src.inference.predictor import predict_from_edf
+    from src.inference.report_export import build_analysis_report_markdown, build_analysis_summary_json
+    from src.physiology.multimodal import analyze_multimodal_physiology
+
+    st.title("9. Raw EDF Upload, Multimodal Physiology & Report Export")
+    st.info(
+        "**Research Disclaimer:** SomniMap is an exploratory sleep-signal research platform, not a clinical diagnostic system. "
+        "Model predictions and signal-derived physiological metrics are shown separately."
+    )
+
+    uploaded_edf = st.file_uploader("Upload an overnight PSG EDF file (.edf) [Required]", type=["edf"])
+    uploaded_txt = st.file_uploader("Optional: Upload RemLogic .txt reference annotations (Ground-Truth Overlay Only)", type=["txt"])
+    stride_opt = st.select_slider("Inference Window Stride (epochs)", options=[5, 10, 20], value=5)
+
+    if uploaded_edf is not None:
+        with tempfile.NamedTemporaryFile(suffix=".edf", delete=False) as tmp:
+            tmp.write(uploaded_edf.getbuffer())
+            tmp_path = Path(tmp.name)
+        tmp_txt_path = None
+        if uploaded_txt is not None:
+            with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as ttxt:
+                ttxt.write(uploaded_txt.getbuffer())
+                tmp_txt_path = Path(ttxt.name)
+
+        try:
+            info = inspect_edf(tmp_path)
+            st.subheader("Channel Inventory & Compatibility Check")
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Duration (hrs)", round(info["duration_sec"] / 3600.0, 2))
+            c2.metric("30-s Epochs", info["n_epochs_30s"])
+            c3.metric("Header Rate (Hz)", info["header_sfreq_hz"])
+            c4.metric("Compatible", "Yes" if info["compatible"] else "No")
+
+            for w in info["warnings"]:
+                st.warning(w)
+            with st.expander("Channel Mapping & Multimodal Extras"):
+                st.json({"canonical_mapping": info["canonical_mapping"], "multimodal_extras": info["multimodal_extras"]})
+
+            if info["compatible"] and st.button("Run SomniMapNet + Multimodal Analysis"):
+                with st.spinner("Preprocessing EDF and running SomniMapNet inference..."):
+                    res = predict_from_edf(tmp_path, stride_epochs=stride_opt, cfg=CFG)
+                    pred = res["predictions"]
+                    phys = analyze_multimodal_physiology(
+                        res["extras_raw"], res["loaded_sfreq"], pred["stage_preds"], pred.get("cap_events")
+                    )
+
+                st.subheader("Predictive Outputs — Hypnogram & Uncertainty")
+                u1, u2, u3 = st.columns(3)
+                u1.metric("Mean Calibrated Confidence", f"{float(np.mean(pred['stage_confidence'])):.3f}")
+                u2.metric("Mean Normalized Entropy", f"{float(np.mean(pred['stage_entropy'])):.3f}")
+                n_low = len(pred["low_confidence_epochs"])
+                u3.metric("Low-Conf Epochs (<0.55)", f"{n_low}/{pred['n_epochs']} ({100.0*n_low/max(1,pred['n_epochs']):.1f}%)")
+
+                fig_h = go.Figure()
+                fig_h.add_trace(go.Scatter(y=pred["stage_preds"], name="Predicted (SomniMapNet)", line_shape="hv"))
+                if tmp_txt_path is not None:
+                    try:
+                        from src.data.annotation_parser import parse_txt_annotations
+                        from src.data.preprocessing import align_annotations_to_epochs
+                        parsed_ref = parse_txt_annotations(tmp_txt_path)
+                        if parsed_ref.get("parse_ok") and info.get("start_datetime"):
+                            gt_st, _ = align_annotations_to_epochs(
+                                parsed_ref, info["start_datetime"], pred["n_epochs"]
+                            )
+                            fig_h.add_trace(go.Scatter(
+                                y=np.where(gt_st >= 0, gt_st, np.nan),
+                                name="Ground Truth Reference (.txt)",
+                                line_shape="hv",
+                                line=dict(dash="dot"),
+                            ))
+                        else:
+                            st.info("Optional .txt reference could not be aligned (missing EDF start_datetime or unsupported .txt format).")
+                    except Exception as exc:
+                        st.info(f"Optional .txt reference could not be aligned ({exc}).")
+                fig_h.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
+                fig_h.update_layout(title="Sleep-Stage Hypnogram (Predictions vs Optional Reference)", xaxis_title="Epoch (30s)", height=310)
+                st.plotly_chart(fig_h, use_container_width=True)
+
+                fig_u = go.Figure()
+                fig_u.add_trace(go.Scatter(y=pred["stage_confidence"], name="Calibrated Confidence", line=dict(width=1.2)))
+                fig_u.add_trace(go.Scatter(y=pred["stage_entropy"], name="Normalized Entropy", line=dict(width=1.2, dash="dot")))
+                fig_u.update_layout(title="Per-Epoch Predictive Uncertainty", xaxis_title="Epoch (30s)", height=260)
+                st.plotly_chart(fig_u, use_container_width=True)
+
+                if "cap_events" in pred:
+                    st.subheader("Predictive Outputs — CAP Events (Predicted NREM)")
+                    st.caption(
+                        "**Model Caveat:** Post-processed CAP detection uses 10 Hz smoothing, min duration >= 2.0 s, and A2 boost. "
+                        "A2 subtype precision/F1 (~0.20–0.23 on validation) remains substantially lower than A1/A3; treat A2 counts as exploratory."
+                    )
+                    cc1, cc2, cc3, cc4 = st.columns(4)
+                    cc1.metric("NREM CAP Rate", f"{pred['cap_rate_nrem']*100:.1f}%")
+                    cc2.metric("A1 Events", pred["cap_event_counts"]["A1"])
+                    cc3.metric("A2 Events (Exploratory)", pred["cap_event_counts"]["A2"])
+                    cc4.metric("A3 Events", pred["cap_event_counts"]["A3"])
+                    if pred["cap_events"]:
+                        with st.expander(f"Inspect Detected CAP Events ({len(pred['cap_events'])} total)"):
+                            ev_df = pd.DataFrame(pred["cap_events"])[["subtype_name", "start_s", "end_s", "duration_s", "epoch_idx"]]
+                            st.dataframe(ev_df, use_container_width=True, height=240)
+
+                st.subheader("Exploratory Signal-Derived Physiology (Brain–Heart–Respiration)")
+                st.caption(phys["disclaimer"])
+                p1, p2, p3 = st.columns(3)
+                ecg_d = phys["ecg"]
+                resp_d = phys["respiratory"]
+                spo2_d = phys["spo2"]
+                p1.metric("ECG Mean HR (bpm)", ecg_d["mean_hr_bpm"] if ecg_d.get("available") else "Unavailable")
+                p2.metric("Resp Rate (br/min)", resp_d["mean_br_bpm"] if resp_d.get("available") else "Unavailable")
+                p3.metric("SpO2 Mean (%)", spo2_d["mean_pct"] if spo2_d.get("available") else "Unavailable")
+
+                if not ecg_d.get("available"):
+                    st.caption(f"ECG: {ecg_d.get('reason', 'Not available')}")
+                elif ecg_d.get("by_stage"):
+                    st.write("**Stage-Stratified Cardiac Metrics (ECG):**")
+                    st.dataframe(pd.DataFrame([{"Stage": k, **v} for k, v in ecg_d["by_stage"].items()]), use_container_width=True)
+                    if ecg_d.get("mean_cap_hr_delta_bpm") is not None:
+                        st.caption(f"Mean HR shift during predicted CAP vs pre-event baseline: **{ecg_d['mean_cap_hr_delta_bpm']:+.2f} bpm**")
+
+                if not resp_d.get("available"):
+                    st.caption(f"Respiratory: {resp_d.get('reason', 'Not available')}")
+                elif resp_d.get("by_stage"):
+                    st.write("**Stage-Stratified Respiratory Rate (breaths/min):**")
+                    st.dataframe(pd.DataFrame([{"Stage": k, **v} for k, v in resp_d["by_stage"].items()]), use_container_width=True)
+
+                if not spo2_d.get("available"):
+                    st.caption(f"SpO2: {spo2_d.get('reason', 'Not available')}")
+
+                md_rep = build_analysis_report_markdown(res, phys)
+                js_rep = build_analysis_summary_json(res, phys)
+                d1, d2 = st.columns(2)
+                d1.download_button("Download Markdown Report (.md)", md_rep, file_name=f"{uploaded_edf.name}_report.md")
+                d2.download_button("Download JSON Summary (.json)", js_rep, file_name=f"{uploaded_edf.name}_summary.json")
+        finally:
+            tmp_path.unlink(missing_ok=True)
+            if tmp_txt_path is not None:
+                tmp_txt_path.unlink(missing_ok=True)

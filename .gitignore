@@ -12,6 +12,7 @@ env/
 data/processed/*
 !data/processed/preprocessing_summary.csv
 data/features/
+data/external_demo/
 *.edf
 *.npy
 *.npz

@@ -1,0 +1,81 @@
+{
+  "version": "1.0",
+  "default_inference_checkpoint": "phase4_SomniMapNet_bilstm_w20_E8_dualhead_best.pt",
+  "preprocessing": {
+    "target_sfreq_hz": 100,
+    "epoch_duration_sec": 30,
+    "notch_hz": 50.0,
+    "eeg_eog_bandpass_hz": [0.3, 35.0],
+    "emg_bandpass_hz": [10.0, 45.0],
+    "normalization": "robust_zscore_per_recording",
+    "canonical_channels_6": [
+      "EEG_C4_A1",
+      "EEG_F4_C4",
+      "EEG_C4_P4",
+      "EEG_FP2_F4",
+      "EOG",
+      "EMG_CHIN"
+    ]
+  },
+  "checkpoints": {
+    "phase4_SomniMapNet_bilstm_w20_E8_dualhead_best.pt": {
+      "arch": "SomniMapNet",
+      "in_channels": 6,
+      "mode": "multi_channel",
+      "context_type": "bilstm",
+      "window_epochs": 20,
+      "use_cap_head": true,
+      "chan_attn": true,
+      "temperature": 1.1757,
+      "val_macro_f1": 0.777,
+      "val_n1_f1": 0.469,
+      "test_locked_macro_f1": 0.7382,
+      "notes": "Flagship dual-head model (Stage + CAP A1/A2/A3); used for Phase 5, 6, and 8."
+    },
+    "phase4_SomniMapNet_bilstm_w20_E5_multichan_best.pt": {
+      "arch": "SomniMapNet",
+      "in_channels": 6,
+      "mode": "multi_channel",
+      "context_type": "bilstm",
+      "window_epochs": 20,
+      "use_cap_head": false,
+      "chan_attn": true,
+      "val_macro_f1": 0.7824,
+      "val_n1_f1": 0.4558,
+      "notes": "Best stage-only multi-channel SomniMapNet on val."
+    },
+    "phase4_SomniMapNet_bilstm_w20_E3_bilstm_best.pt": {
+      "arch": "SomniMapNet",
+      "in_channels": 1,
+      "mode": "single_eeg",
+      "context_type": "bilstm",
+      "window_epochs": 20,
+      "use_cap_head": false,
+      "chan_attn": false,
+      "val_macro_f1": 0.7746,
+      "val_n1_f1": 0.4058
+    },
+    "phase4_SomniMapNet_tcn_w20_E3_tcn_best.pt": {
+      "arch": "SomniMapNet",
+      "in_channels": 1,
+      "mode": "single_eeg",
+      "context_type": "tcn",
+      "window_epochs": 20,
+      "use_cap_head": false,
+      "chan_attn": false,
+      "val_macro_f1": 0.7704,
+      "val_n1_f1": 0.4375
+    },
+    "phase4_SomniMapNet_transformer_w20_E3_transformer_best.pt": {
+      "arch": "SomniMapNet",
+      "in_channels": 1,
+      "mode": "single_eeg",
+      "context_type": "transformer",
+      "window_epochs": 20,
+      "use_cap_head": false,
+      "chan_attn": false,
+      "val_macro_f1": 0.7422,
+      "val_n1_f1": 0.3427
+    }
+  }
+}
