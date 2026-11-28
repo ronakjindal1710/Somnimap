@@ -122,16 +122,16 @@ st.markdown(
         fill: #FFFFFF !important;
     }}
 
-    /* Primary vs Secondary buttons (full-width 9-pill navbar & actions) */
+    /* Primary vs Secondary buttons (full-width 10-pill navbar & actions) */
     button[kind="primary"] {{
         background-color: #FFFFFF !important;
         border: 1px solid #FFFFFF !important;
         color: #040406 !important;
         border-radius: 10px !important;
-        font-size: 0.78rem !important;
+        font-size: 0.75rem !important;
         font-weight: 700 !important;
         white-space: nowrap !important;
-        padding: 0.45rem 0.25rem !important;
+        padding: 0.42rem 0.2rem !important;
     }}
     button[kind="primary"] p {{
         color: #040406 !important;
@@ -141,15 +141,108 @@ st.markdown(
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
         color: {TEXT_PRIMARY} !important;
         border-radius: 10px !important;
-        font-size: 0.78rem !important;
+        font-size: 0.75rem !important;
         font-weight: 500 !important;
         white-space: nowrap !important;
-        padding: 0.45rem 0.25rem !important;
+        padding: 0.42rem 0.2rem !important;
     }}
     button[kind="secondary"]:hover {{
         border-color: rgba(255, 255, 255, 0.45) !important;
         color: #FFFFFF !important;
     }}
+
+    /* Wikipedia-style Home Page */
+    .wiki-toc {{
+        background-color: {BG_CARD};
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 18px 18px;
+        position: sticky;
+        top: 1rem;
+    }}
+    .wiki-toc-title {{
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 8px;
+        margin-bottom: 10px;
+    }}
+    .wiki-toc a {{
+        display: block;
+        color: #A1A1AA;
+        text-decoration: none;
+        font-size: 0.84rem;
+        padding: 5px 4px;
+        border-radius: 6px;
+        transition: color 0.15s ease;
+    }}
+    .wiki-toc a:hover {{
+        color: #FFFFFF;
+        background: rgba(255, 255, 255, 0.05);
+    }}
+    .wiki-article {{
+        background-color: {BG_CARD};
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 26px 30px;
+    }}
+    .wiki-title {{
+        font-size: 2.0rem;
+        font-weight: 800;
+        color: #FFFFFF;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        padding-bottom: 8px;
+        margin-bottom: 10px;
+    }}
+    .wiki-hatnote {{
+        font-size: 0.88rem;
+        font-style: italic;
+        color: #A1A1AA;
+        margin-bottom: 18px;
+    }}
+    .wiki-article h2 {{
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 6px;
+        margin-top: 22px;
+        margin-bottom: 10px;
+    }}
+    .wiki-article p, .wiki-article li {{
+        font-size: 0.93rem;
+        line-height: 1.65;
+        color: #E4E4E7;
+    }}
+    .wiki-infobox {{
+        background-color: {BG_CARD};
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 14px;
+        padding: 18px 18px;
+        margin-bottom: 14px;
+    }}
+    .wiki-infobox-head {{
+        background: rgba(255, 255, 255, 0.08);
+        color: #FFFFFF;
+        font-weight: 700;
+        font-size: 0.92rem;
+        text-align: center;
+        padding: 8px 10px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }}
+    .wiki-infobox-row {{
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 7px 2px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 0.82rem;
+    }}
+    .wiki-infobox-row:last-child {{ border-bottom: none; }}
+    .wiki-ib-k {{ color: #A1A1AA; font-weight: 600; }}
+    .wiki-ib-v {{ color: #FFFFFF; text-align: right; }}
     .stDownloadButton > button {{
         background-color: {BG_CARD};
         color: {TEXT_PRIMARY};
@@ -363,6 +456,7 @@ st.markdown(
 )
 
 SCREENS = [
+    "0. Home",
     "1. Overview",
     "2. Architecture",
     "3. PSG Explorer",
@@ -393,9 +487,121 @@ split_data = load_split_manifest()
 
 
 # ---------------------------------------------------------------------------
-# Screen 1: Cohort & Dataset Overview
+# Screen 0: Wikipedia-Style Home Page (Default Landing Page)
 # ---------------------------------------------------------------------------
 if screen == SCREENS[0]:
+    lhs_col, mid_col, rhs_col = st.columns([0.95, 2.55, 1.2], gap="medium")
+
+    with lhs_col:
+        st.markdown(
+            """
+            <div class="wiki-toc" id="top">
+              <div class="wiki-toc-title">Contents</div>
+              <a href="#top">(Top)</a>
+              <a href="#what-is-nidra">1. What is NIDRA?</a>
+              <a href="#purpose-relevance">2. Purpose &amp; Clinical Relevance</a>
+              <a href="#what-nidra-does">3. What NIDRA Does</a>
+              <a href="#models-used">4. Models Used &amp; Why</a>
+              <a href="#dashboard-guide">5. Dashboard Guide</a>
+              <a href="#limitations">6. Limitations &amp; Scope</a>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with mid_col:
+        st.markdown(
+            """
+            <div class="wiki-article">
+              <div class="wiki-title">NIDRA</div>
+              <div class="wiki-hatnote">
+                From Neural Inference for Deep, REM &amp; Arousal Architecture — an exploratory multi-task sleep-staging and Cyclic Alternating Pattern (CAP) arousal analysis platform.
+              </div>
+
+              <h2 id="what-is-nidra">1. What is NIDRA?</h2>
+              <p>
+                <strong>NIDRA</strong> (<em>Neural Inference for Deep, REM &amp; Arousal Architecture</em>) is an end-to-end deep learning and multimodal signal-analysis platform designed for overnight human polysomnography (<strong>PSG</strong>). Trained and evaluated on the PhysioNet <strong>CAP Sleep Database</strong> (108 full-night EDF recordings across healthy controls and seven sleep-disorder cohorts), NIDRA jointly decodes macro sleep architecture (30-second epochs) and fine-grained micro-arousal dynamics (10 Hz CAP Phase-A events) from standardized EEG, EOG, and chin EMG signals.
+              </p>
+
+              <h2 id="purpose-relevance">2. Purpose &amp; Clinical Relevance</h2>
+              <p>
+                Manual sleep scoring requires trained technologists to inspect 8-hour multi-channel PSG traces epoch by epoch—and annotating <strong>Cyclic Alternating Pattern (CAP)</strong> micro-arousals (subtypes <strong>A1</strong> slow-wave, <strong>A2</strong> mixed, and <strong>A3</strong> fast-EEG bursts) at sub-second resolution is even more labor-intensive and prone to inter-scorer variability.
+              </p>
+              <ul>
+                <li><strong>Sleep Fragmentation Beyond Macro Stages:</strong> Two nights with identical N2/N3 percentages can have vastly different restorative quality depending on NREM CAP arousal density.</li>
+                <li><strong>Cross-Disorder Insight:</strong> Pathologies such as Insomnia, Nocturnal Frontal Lobe Epilepsy (NFLE), RBD, Narcolepsy, PLM, SDB, and Bruxism exhibit distinct macro-stage and CAP instability signatures.</li>
+                <li><strong>Transparent Decision Support:</strong> Rather than returning opaque labels, NIDRA pairs temperature-calibrated confidence scores, Grad-CAM / Integrated Gradients attributions, and domain-shift montage warnings.</li>
+              </ul>
+
+              <h2 id="what-nidra-does">3. What NIDRA Does</h2>
+              <ul>
+                <li><strong>Leakage-Safe Standardization:</strong> Resamples raw EDF channels to <strong>100 Hz</strong> (50 Hz notch, 0.3–35 Hz EEG/EOG, 10–45 Hz chin EMG) with per-recording robust z-score normalization and explicit <code>channel_mask</code> tracking (missing channels are zeroed, never fabricated).</li>
+                <li><strong>Dual-Head Joint Inference:</strong> Simultaneously outputs 5-class sleep stages (<code>Wake</code>, <code>N1</code>, <code>N2</code>, <code>N3</code>, <code>REM</code>) every 30 s and CAP Phase-A probabilities (<code>None</code>, <code>A1</code>, <code>A2</code>, <code>A3</code>) at <strong>10 Hz</strong> using overlapping <code>stride=5</code> window averaging.</li>
+                <li><strong>Calibrated CAP Post-Processing:</strong> Applies validation-tuned 10 Hz smoothing, NREM masking, <code>A2</code> calibration, and duration/gap filtering (<code>min_dur_s=2.5 s</code>, <code>merge_gap_s=1.5 s</code>), achieving macro CAP-rate Pearson <strong>r = 0.9319</strong> on <code>val</code>.</li>
+                <li><strong>Conditional Multimodal Vitals:</strong> Extracts ECG heart rate &amp; HRV (SDNN/RMSSD), respiratory rate, and SpO<sub>2</sub> saturation strictly when those sensors exist in the uploaded EDF, and exports self-contained <code>.md</code> and <code>.json</code> reports.</li>
+              </ul>
+
+              <h2 id="models-used">4. Models Used &amp; Why</h2>
+              <p>
+                NIDRA was developed through a systematic 3-phase ablation hierarchy on a strict subject-independent <strong>70 / 15 / 15</strong> split (75 Train / 17 Val / 16 Locked Test):
+              </p>
+              <ul>
+                <li><strong>Phase 2 — Single-Epoch Baselines (RF, SVM, CNN1D, ResNet1D, InceptionTime):</strong> Fast per-epoch baselines, but limited on transitional <code>N1</code> sleep because 30-s windows lack surrounding sleep-cycle context.</li>
+                <li><strong>Phase 3 — Temporal Context Models (CNN-BiLSTM, CNN-TCN, CNN-Transformer, TemporalUNet):</strong> Adding 20-epoch sequence context (10 minutes) substantially improved macro-stage continuity and <code>N1</code> detection.</li>
+                <li><strong>Phase 4 — Flagship NIDRA Dual-Head Architecture (<code>E8_dualhead</code>):</strong> Combines a <strong>1D Multi-Scale CNN</strong> local feature extractor, <strong>Channel Attention</strong> (dynamically weighting EEG/EOG/EMG leads), a <strong>20-epoch Bidirectional LSTM</strong> for long-range sleep-cycle context, and <strong>Dual Classification Heads</strong> (30-s Stage + 10 Hz CAP). <em>Why this won:</em> multi-channel attention handles missing/noisy leads gracefully while joint CAP supervision sharpens NREM micro-arousal sensitivity without sacrificing sleep-stage Macro-F1 (<strong>0.7382</strong> on locked test; <strong>78.93%</strong> accuracy).</li>
+              </ul>
+
+              <h2 id="dashboard-guide">5. Dashboard Guide (Screens 1–9)</h2>
+              <ul>
+                <li><strong>1. Overview &amp; 2. Architecture:</strong> Cohort stratification, preprocessing coverage, channel masks, and dual-head pipeline benchmarks.</li>
+                <li><strong>3. PSG Explorer &amp; 4. Live Inference:</strong> Inspect 100 Hz EEG/EOG/EMG traces with 10 Hz CAP overlays and run live checkpoint inference on validation recordings.</li>
+                <li><strong>5. CAP Benchmark &amp; 6. Explainability:</strong> Compare baseline vs. calibrated CAP event detection (IoU &ge; 0.5) and inspect Grad-CAM / Integrated Gradients attributions.</li>
+                <li><strong>7. Calibration &amp; 8. Cross-Condition:</strong> Temperature scaling (<code>T = 1.1757</code>, ECE <code>0.0287 &rarr; 0.0179</code>), confusion matrix, and locked 16-subject disorder breakdown.</li>
+                <li><strong>9. Raw EDF Upload:</strong> Upload any overnight <code>.edf</code> (up to 1024 MB) plus optional RemLogic <code>.txt</code> annotations for blind or post-hoc evaluated inference and report export.</li>
+              </ul>
+
+              <h2 id="limitations">6. Limitations &amp; Research Scope</h2>
+              <p>
+                NIDRA is an exploratory research platform, not a clinical diagnostic device. While macro NREM CAP rate correlates strongly with ground truth (<code>r = 0.9319</code>), intermediate <code>A2</code> event boundaries remain challenging without class-weighted GPU retraining, and external single-channel montages (e.g., Sleep-EDF <code>Fpz-Cz</code>) trigger automatic domain-shift warnings.
+              </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with rhs_col:
+        st.markdown(
+            """
+            <div class="wiki-infobox">
+              <div class="wiki-infobox-head">NIDRA System Profile</div>
+              <div class="wiki-infobox-row"><span class="wiki-ib-k">Full Name</span><span class="wiki-ib-v">Neural Inference for Deep, REM &amp; Arousal Architecture</span></div>
+              <div class="wiki-infobox-row"><span class="wiki-ib-k">Primary Dataset</span><span class="wiki-ib-v">PhysioNet CAP (108 EDFs)</span></div>
+              <div class="wiki-infobox-row"><span class="wiki-ib-k">Subject Split</span><span class="wiki-ib-v">75 Train / 17 Val / 16 Test</span></div>
+              <div class="wiki-infobox-row"><span class="wiki-ib-k">Flagship Model</span><span class="wiki-ib-v">E8 Dual-Head CNN-BiLSTM</span></div>
+              <div class="wiki-infobox-row"><span class="wiki-ib-k">Sampling Rate</span><span class="wiki-ib-v">100 Hz (30s Stage / 10 Hz CAP)</span></div>
+              <div class="wiki-infobox-row"><span class="wiki-ib-k">Locked Test Acc</span><span class="wiki-ib-v">78.93% (Macro-F1 0.7382)</span></div>
+              <div class="wiki-infobox-row"><span class="wiki-ib-k">Val CAP Event F1</span><span class="wiki-ib-v">0.4326 (CAP Rate r = 0.9319)</span></div>
+              <div class="wiki-infobox-row"><span class="wiki-ib-k">Calibration</span><span class="wiki-ib-v">T = 1.1757 (ECE 0.0179)</span></div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown('<div class="nidra-card"><div class="nidra-card-title">Quick Navigation</div><div class="nidra-card-sub">Jump directly to live analysis or benchmarks</div></div>', unsafe_allow_html=True)
+        if st.button("Open Raw EDF Upload (Screen 9)", use_container_width=True, key="home_jump_9"):
+            st.session_state["active_screen"] = SCREENS[9]
+            st.rerun()
+        if st.button("Open Live Inference (Screen 4)", use_container_width=True, key="home_jump_4"):
+            st.session_state["active_screen"] = SCREENS[4]
+            st.rerun()
+        if st.button("Open Cross-Condition Test (Screen 8)", use_container_width=True, key="home_jump_8"):
+            st.session_state["active_screen"] = SCREENS[8]
+            st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# Screen 1: Cohort & Dataset Overview
+# ---------------------------------------------------------------------------
+elif screen == SCREENS[1]:
     st.subheader("Screen 1: Cohort & Dataset Overview")
     parts = split_data["partitions"]
     prep_df = load_csv_if_exists(str(PROC_DIR / "preprocessing_summary.csv"))
@@ -480,7 +686,7 @@ if screen == SCREENS[0]:
 # ---------------------------------------------------------------------------
 # Screen 2: Signal Standardization & Dual-Head Architecture
 # ---------------------------------------------------------------------------
-elif screen == SCREENS[1]:
+elif screen == SCREENS[2]:
     st.subheader("Screen 2: Standardization & Dual-Head Architecture")
     prep_df = load_csv_if_exists(str(PROC_DIR / "preprocessing_summary.csv"))
     p2 = load_csv_if_exists(str(RESULTS_DIR / "phase2_baselines.csv"))
@@ -583,7 +789,7 @@ elif screen == SCREENS[1]:
 # ---------------------------------------------------------------------------
 # Screen 3: PSG Signal & Hypnogram Explorer
 # ---------------------------------------------------------------------------
-elif screen == SCREENS[2]:
+elif screen == SCREENS[3]:
     st.subheader("Screen 3: PSG Signal & Hypnogram Explorer")
     avail_ids = sorted([d.name for d in PROC_DIR.iterdir() if d.is_dir() and (d / "metadata.json").exists()])
     val_ids = set(split_data["partitions"]["val"]["record_ids"])
@@ -689,7 +895,7 @@ elif screen == SCREENS[2]:
 # ---------------------------------------------------------------------------
 # Screen 4: Live Inference on Validation Recordings
 # ---------------------------------------------------------------------------
-elif screen == SCREENS[3]:
+elif screen == SCREENS[4]:
     st.subheader("Screen 4: Live NIDRA Inference")
     ckpt_files = sorted((PROJ_ROOT / "checkpoints").glob("phase4_*.pt")) if (PROJ_ROOT / "checkpoints").exists() else []
     if not ckpt_files:
@@ -775,7 +981,7 @@ elif screen == SCREENS[3]:
 # ---------------------------------------------------------------------------
 # Screen 5: CAP Event & Subtype Benchmark
 # ---------------------------------------------------------------------------
-elif screen == SCREENS[4]:
+elif screen == SCREENS[5]:
     st.subheader("Screen 5: CAP Event & Subtype Benchmark")
     cap_base = load_json_if_exists(str(RESULTS_DIR / "phase5_cap_eval_val.json"))
     stage2 = load_json_if_exists(str(RESULTS_DIR / "stage2_postproc_val.json"))
@@ -905,7 +1111,7 @@ elif screen == SCREENS[4]:
 # ---------------------------------------------------------------------------
 # Screen 6: Explainability & Spectral Attribution
 # ---------------------------------------------------------------------------
-elif screen == SCREENS[5]:
+elif screen == SCREENS[6]:
     st.subheader("Screen 6: Explainability & Spectral Attribution")
     xai_dir = RESULTS_DIR / "xai"
     xai_json = load_json_if_exists(str(xai_dir / "xai_calibration_summary.json"))
@@ -959,7 +1165,7 @@ elif screen == SCREENS[5]:
 # ---------------------------------------------------------------------------
 # Screen 7: Calibration & Error Analysis
 # ---------------------------------------------------------------------------
-elif screen == SCREENS[6]:
+elif screen == SCREENS[7]:
     st.subheader("Screen 7: Calibration & Error Analysis")
     xai_dir = RESULTS_DIR / "xai"
     xai_json = load_json_if_exists(str(xai_dir / "xai_calibration_summary.json"))
@@ -1059,7 +1265,7 @@ elif screen == SCREENS[6]:
 # ---------------------------------------------------------------------------
 # Screen 8: Cross-Condition Pathology Breakdown
 # ---------------------------------------------------------------------------
-elif screen == SCREENS[7]:
+elif screen == SCREENS[8]:
     st.subheader("Screen 8: Cross-Condition Pathology Breakdown (Locked 16-Subject Test)")
     test_json = load_json_if_exists(str(RESULTS_DIR / "phase8_test_locked_metrics.json"))
     if not test_json:
@@ -1122,7 +1328,7 @@ elif screen == SCREENS[7]:
 # ---------------------------------------------------------------------------
 # Screen 9: Raw EDF Upload, Multimodal Physiology & Report Export
 # ---------------------------------------------------------------------------
-elif screen == SCREENS[8]:
+elif screen == SCREENS[9]:
     from src.inference.edf_loader import inspect_edf
     from src.inference.predictor import predict_from_edf
     from src.inference.report_export import (
