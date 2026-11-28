@@ -74,39 +74,45 @@ st.markdown(
         gap: 14px;
     }}
     .nidra-wordmark {{
-        font-size: 1.75rem;
+        font-size: 2.35rem;
         font-weight: 800;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.05em;
         color: {TEXT_PRIMARY};
         line-height: 1;
     }}
     .nidra-subtitle {{
-        font-size: 0.85rem;
+        font-size: 0.96rem;
         color: {TEXT_MUTED};
         letter-spacing: 0.01em;
     }}
 
-    /* Pill-style horizontal radio navigation (single line) */
+    /* Pill-style horizontal radio navigation (full-width single line) */
+    div[data-testid="stRadio"] {{
+        width: 100% !important;
+    }}
     div[data-testid="stRadio"] > div[role="radiogroup"] {{
         display: flex;
+        width: 100% !important;
         flex-wrap: nowrap;
         justify-content: space-between;
         overflow-x: auto;
-        gap: 4px;
+        gap: 6px;
         background-color: {BG_CARD};
         border: 1px solid rgba(167, 139, 250, 0.16);
         border-radius: 14px;
-        padding: 5px 6px;
+        padding: 6px 8px;
         margin-bottom: 18px;
     }}
     div[data-testid="stRadio"] > div[role="radiogroup"] > label {{
         background: transparent;
         border-radius: 10px;
-        padding: 6px 10px;
+        padding: 7px 10px;
         margin: 0 !important;
         cursor: pointer;
         white-space: nowrap;
-        flex-shrink: 0;
+        flex: 1 1 0;
+        justify-content: center;
+        text-align: center;
         transition: all 0.15s ease;
     }}
     div[data-testid="stRadio"] > div[role="radiogroup"] > label:has(input:checked) {{
