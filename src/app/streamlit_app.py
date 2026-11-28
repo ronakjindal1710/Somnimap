@@ -174,6 +174,7 @@ st.markdown(
         font-size: 16px;
         padding: 7px 6px;
         cursor: pointer;
+        scroll-behavior: smooth;
         border-radius: 6px;
         transition: color 0.15s ease;
     }}
@@ -208,6 +209,7 @@ st.markdown(
         padding-bottom: 8px;
         margin-top: 30px;
         margin-bottom: 14px;
+        scroll-margin-top: 24px;
     }}
     .wiki-article h3 {{
         font-size: 21px;
@@ -504,40 +506,14 @@ if screen == SCREENS[0]:
             """
             <div class="wiki-toc" id="wiki-toc-top">
               <div class="wiki-toc-title">Contents</div>
-              <a href="javascript:void(0)" onclick="scrollToSection('wiki-article-top')">(Top)</a>
-              <a href="javascript:void(0)" onclick="scrollToSection('what-is-nidra')">1. What is NIDRA?</a>
-              <a href="javascript:void(0)" onclick="scrollToSection('purpose-relevance')">2. Purpose &amp; Clinical Relevance</a>
-              <a href="javascript:void(0)" onclick="scrollToSection('what-nidra-does')">3. What NIDRA Does</a>
-              <a href="javascript:void(0)" onclick="scrollToSection('models-used')">4. Models Used &amp; Why</a>
-              <a href="javascript:void(0)" onclick="scrollToSection('dashboard-guide')">5. Dashboard Guide</a>
-              <a href="javascript:void(0)" onclick="scrollToSection('limitations')">6. Limitations &amp; Scope</a>
+              <a href="#wiki-article-top" target="_self">(Top)</a>
+              <a href="#what-is-nidra" target="_self">1. What is NIDRA?</a>
+              <a href="#purpose-relevance" target="_self">2. Purpose &amp; Clinical Relevance</a>
+              <a href="#what-nidra-does" target="_self">3. What NIDRA Does</a>
+              <a href="#models-used" target="_self">4. Models Used &amp; Why</a>
+              <a href="#dashboard-guide" target="_self">5. Dashboard Guide</a>
+              <a href="#limitations" target="_self">6. Limitations &amp; Scope</a>
             </div>
-            <script>
-            function scrollToSection(id) {
-                // Try inside this iframe first, then escalate to parent frame
-                var el = document.getElementById(id);
-                if (!el) {
-                    try { el = window.parent.document.getElementById(id); } catch(e) {}
-                }
-                if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                } else {
-                    // Fallback: search all iframes in parent for the element
-                    try {
-                        var frames = window.parent.document.querySelectorAll('iframe');
-                        for (var i = 0; i < frames.length; i++) {
-                            try {
-                                var target = frames[i].contentDocument.getElementById(id);
-                                if (target) {
-                                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                    break;
-                                }
-                            } catch(e) {}
-                        }
-                    } catch(e) {}
-                }
-            }
-            </script>
             """,
             unsafe_allow_html=True,
         )
