@@ -29,34 +29,37 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# Strict 5-Color Editorial Theme: Black × Electric Violet × Lavender
+# Strict Swiss Dark Monochrome Editorial Palette
 # ---------------------------------------------------------------------------
-BG_MAIN = "#07070B"
-BG_CARD = "#12121C"
-VIOLET_PRIMARY = "#7857FF"
-LAVENDER_ACCENT = "#A78BFA"
-TEXT_PRIMARY = "#E8E5F5"
-TEXT_MUTED = "rgba(232, 229, 245, 0.62)"
+BG_MAIN = "#040406"
+BG_CARD = "#0D0E11"
+VIOLET_PRIMARY = "#FFFFFF"       # Primary Accent (Pure White)
+LAVENDER_ACCENT = "#71717A"      # Secondary Accent (Medium Charcoal-Gray)
+TEXT_PRIMARY = "#FFFFFF"
+TEXT_MUTED = "#A1A1AA"
 
 st.markdown(
     f"""
     <style>
-    /* Hide default sidebar & tighten top header */
-    [data-testid="stSidebar"] {{ display: none; }}
-    #MainMenu {{ visibility: hidden; }}
-    footer {{ visibility: hidden; }}
-    header[data-testid="stHeader"] {{ background: transparent; height: 1.5rem; }}
+    /* Hide default Streamlit chrome, Deploy button, sidebar & footer */
+    [data-testid="stSidebar"],
+    header[data-testid="stHeader"],
+    [data-testid="stDecoration"],
+    #MainMenu,
+    footer,
+    .stDeployButton {{
+        display: none !important;
+    }}
 
     .stApp {{
         background-color: {BG_MAIN};
         color: {TEXT_PRIMARY};
     }}
     .block-container {{
-        padding-top: 1.2rem;
-        padding-bottom: 2.5rem;
-        padding-left: 2rem;
-        padding-right: 2rem;
-        max-width: 100% !important;
+        max-width: 1240px !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 3rem !important;
+        margin: 0 auto !important;
     }}
 
     /* Editorial top header bar */
@@ -65,8 +68,8 @@ st.markdown(
         align-items: center;
         justify-content: space-between;
         padding: 4px 2px 14px 2px;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.14);
-        margin-bottom: 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: 16px;
     }}
     .nidra-brand {{
         display: flex;
@@ -85,54 +88,14 @@ st.markdown(
         color: {TEXT_MUTED};
         letter-spacing: 0.01em;
     }}
-
-    /* Pill-style horizontal radio navigation (full-width single line) */
-    div[data-testid="stRadio"] {{
-        width: 100% !important;
-    }}
-    div[data-testid="stRadio"] > div[role="radiogroup"] {{
-        display: flex;
-        width: 100% !important;
-        flex-wrap: nowrap;
-        justify-content: space-between;
-        overflow-x: auto;
-        gap: 6px;
-        background-color: {BG_CARD};
-        border: 1px solid rgba(167, 139, 250, 0.16);
-        border-radius: 14px;
-        padding: 6px 8px;
-        margin-bottom: 18px;
-    }}
-    div[data-testid="stRadio"] > div[role="radiogroup"] > label {{
-        background: transparent;
-        border-radius: 10px;
-        padding: 7px 10px;
-        margin: 0 !important;
-        cursor: pointer;
-        white-space: nowrap;
-        flex: 1 1 0;
-        justify-content: center;
-        text-align: center;
-        transition: all 0.15s ease;
-    }}
-    div[data-testid="stRadio"] > div[role="radiogroup"] > label:has(input:checked) {{
-        background-color: {VIOLET_PRIMARY} !important;
-        color: {TEXT_PRIMARY} !important;
-    }}
-    div[data-testid="stRadio"] > div[role="radiogroup"] > label > div:first-child {{
-        display: none !important;
-    }}
-    div[data-testid="stRadio"] > div[role="radiogroup"] > label p {{
-        font-size: 0.79rem;
-        font-weight: 500;
-        color: {TEXT_PRIMARY};
-        white-space: nowrap;
+    hr {{
+        border-color: rgba(255, 255, 255, 0.08) !important;
     }}
 
     /* Elevated KPI metric cards */
     [data-testid="stMetric"] {{
         background-color: {BG_CARD};
-        border: 1px solid rgba(167, 139, 250, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 14px;
         padding: 20px 22px;
     }}
@@ -146,46 +109,72 @@ st.markdown(
         font-size: 2.05rem;
         font-weight: 700;
     }}
+    [data-testid="stMetricDelta"] {{
+        background: rgba(255, 255, 255, 0.08);
+        color: #FFFFFF !important;
+        border-radius: 999px;
+        padding: 2px 10px;
+        width: fit-content;
+        font-size: 0.78rem;
+    }}
+    [data-testid="stMetricDelta"] svg {{
+        fill: #FFFFFF !important;
+    }}
 
-    /* Primary vs Secondary buttons (used for full-width 9-pill navbar & actions) */
+    /* Primary vs Secondary buttons (full-width 9-pill navbar & actions) */
     button[kind="primary"] {{
-        background-color: {VIOLET_PRIMARY} !important;
-        border: 1px solid {VIOLET_PRIMARY} !important;
-        color: {TEXT_PRIMARY} !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #FFFFFF !important;
+        color: #040406 !important;
         border-radius: 10px !important;
-        font-size: 0.80rem !important;
-        font-weight: 600 !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
         white-space: nowrap !important;
-        padding: 0.45rem 0.5rem !important;
+        padding: 0.45rem 0.45rem !important;
+    }}
+    button[kind="primary"] p {{
+        color: #040406 !important;
     }}
     button[kind="secondary"] {{
         background-color: {BG_CARD} !important;
-        border: 1px solid rgba(167, 139, 250, 0.22) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
         color: {TEXT_PRIMARY} !important;
         border-radius: 10px !important;
-        font-size: 0.80rem !important;
+        font-size: 0.78rem !important;
         font-weight: 500 !important;
         white-space: nowrap !important;
-        padding: 0.45rem 0.5rem !important;
+        padding: 0.45rem 0.45rem !important;
     }}
     button[kind="secondary"]:hover {{
-        border-color: {VIOLET_PRIMARY} !important;
-        color: {LAVENDER_ACCENT} !important;
+        border-color: rgba(255, 255, 255, 0.45) !important;
+        color: #FFFFFF !important;
+    }}
+    .stDownloadButton > button {{
+        background-color: {BG_CARD};
+        color: {TEXT_PRIMARY};
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 10px;
+        font-weight: 600;
+    }}
+    .stDownloadButton > button:hover {{
+        background-color: #FFFFFF;
+        color: #040406;
+        border-color: #FFFFFF;
     }}
 
-    /* Clean borderless dataframes (no green artifact) */
+    /* Clean borderless dataframes */
     [data-testid="stDataFrame"] {{
         background-color: {BG_CARD};
-        border: 1px solid rgba(167, 139, 250, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 14px;
         overflow: hidden;
         padding: 4px;
     }}
 
-    /* Editorial cards & progress bars */
+    /* Editorial cards & monochrome progress bars */
     .nidra-card {{
         background-color: {BG_CARD};
-        border: 1px solid rgba(167, 139, 250, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 14px;
         padding: 20px 24px;
         margin-bottom: 14px;
@@ -216,29 +205,29 @@ st.markdown(
     .nidra-bar-track {{
         flex: 1;
         height: 12px;
-        background-color: rgba(232, 229, 245, 0.08);
+        background-color: rgba(255, 255, 255, 0.06);
         border-radius: 999px;
         overflow: hidden;
     }}
     .nidra-bar-fill {{
         height: 100%;
         border-radius: 999px;
-        background: linear-gradient(90deg, {VIOLET_PRIMARY}, {LAVENDER_ACCENT});
+        background: linear-gradient(90deg, #71717A, #FFFFFF);
     }}
     .nidra-bar-val {{
         width: 58px;
         text-align: right;
         font-size: 0.85rem;
         font-weight: 600;
-        color: {LAVENDER_ACCENT};
+        color: #FFFFFF;
         flex-shrink: 0;
     }}
 
     /* Key Insights Card */
     .nidra-insights-card {{
         background-color: {BG_CARD};
-        border: 1px solid rgba(167, 139, 250, 0.16);
-        border-left: 3px solid {VIOLET_PRIMARY};
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-left: 4px solid #FFFFFF;
         border-radius: 14px;
         padding: 20px 24px;
         margin-top: 14px;
@@ -257,11 +246,11 @@ st.markdown(
         margin-bottom: 8px;
         font-size: 0.89rem;
         line-height: 1.5;
-        color: rgba(232, 229, 245, 0.86);
+        color: #E4E4E7;
     }}
     .nidra-insight-row:last-child {{ margin-bottom: 0; }}
     .nidra-check {{
-        color: {VIOLET_PRIMARY};
+        color: #FFFFFF;
         font-weight: 800;
         flex-shrink: 0;
     }}
@@ -271,14 +260,14 @@ st.markdown(
 )
 
 
-def style_editorial_chart(fig: go.Figure, title: str | None = None, height: int = 340) -> go.Figure:
-    """Apply cohesive Black × Electric Violet × Lavender styling to all Plotly figures."""
+def style_editorial_chart(fig: go.Figure, title: str | None = None, height: int = 320) -> go.Figure:
+    """Apply Swiss Dark Monochrome Editorial styling to all Plotly figures."""
     layout_kw: dict[str, Any] = {
         "template": "plotly_dark",
         "paper_bgcolor": BG_CARD,
-        "plot_bgcolor": BG_CARD,
+        "plot_bgcolor": BG_MAIN,
         "font": {"family": "Inter, sans-serif", "color": TEXT_PRIMARY, "size": 12},
-        "margin": {"l": 24, "r": 24, "t": 48, "b": 32},
+        "margin": {"l": 24, "r": 24, "t": 48, "b": 28},
         "height": height,
         "legend": {
             "orientation": "h",
@@ -291,7 +280,7 @@ def style_editorial_chart(fig: go.Figure, title: str | None = None, height: int 
         "xaxis": {"showgrid": False, "zeroline": False, "color": TEXT_MUTED},
         "yaxis": {
             "showgrid": True,
-            "gridcolor": "rgba(232, 229, 245, 0.06)",
+            "gridcolor": "rgba(255, 255, 255, 0.04)",
             "zeroline": False,
             "color": TEXT_MUTED,
         },
@@ -304,20 +293,9 @@ def style_editorial_chart(fig: go.Figure, title: str | None = None, height: int 
 
 def render_key_insights(title: str, insights: list[str] | list[tuple[str, str]]) -> None:
     """Render a clean editorial Key Insights card at the bottom of a screen."""
-    rows_html = []
-    for item in insights:
-        text = item[1] if isinstance(item, tuple) else item
-        rows_html.append(
-            f'<div class="nidra-insight-row"><span class="nidra-check">✓</span>'
-            f"<span>{html.escape(str(text))}</span></div>"
-        )
-    st.markdown(
-        f'<div class="nidra-insights-card">'
-        f'<div class="nidra-insights-title">{html.escape(title)}</div>'
-        f'{"".join(rows_html)}'
-        f"</div>",
-        unsafe_allow_html=True,
-    )
+    from src.inference.report_export import format_key_insights_html
+
+    st.markdown(format_key_insights_html(title, insights), unsafe_allow_html=True)
 
 
 def render_progress_bars(title: str, subtitle: str, rows: list[tuple[str, float, str]]) -> None:
@@ -463,7 +441,7 @@ if screen == SCREENS[0]:
         line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
         marker={"size": 7, "color": VIOLET_PRIMARY},
         fill="tozeroy",
-        fillcolor="rgba(120, 87, 255, 0.18)",
+        fillcolor="rgba(255, 255, 255, 0.10)",
     ))
     fig.add_trace(go.Scatter(
         x=x_lbls,
@@ -473,7 +451,7 @@ if screen == SCREENS[0]:
         line={"shape": "spline", "smoothing": 1.15, "width": 2.0, "dash": "dot", "color": LAVENDER_ACCENT},
         marker={"size": 6, "color": LAVENDER_ACCENT},
         fill="tozeroy",
-        fillcolor="rgba(167, 139, 250, 0.10)",
+        fillcolor="rgba(113, 113, 122, 0.08)",
     ))
     style_editorial_chart(fig, title="Sleep Disorder Cohort Distribution", height=360)
     st.plotly_chart(fig, use_container_width=True, config=PLOTLY_CFG)
@@ -545,22 +523,22 @@ elif screen == SCREENS[1]:
               <div class="nidra-card-title">Dual-Head Signal Architecture</div>
               <div class="nidra-card-sub">Multi-scale shared encoder feeding 30s stage &amp; 10 Hz arousal heads</div>
               <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px 8px;">
-                <div style="background:#07070B;border:1px solid rgba(167,139,250,0.28);border-radius:10px;padding:14px 16px;text-align:center;flex:1;">
+                <div style="background:#040406;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:14px 16px;text-align:center;flex:1;">
                   <div style="font-weight:700;color:{TEXT_PRIMARY};font-size:0.88rem;">100 Hz Signal</div>
                   <div style="color:{TEXT_MUTED};font-size:0.75rem;">0.3–35 Hz EEG/EOG<br/>10–45 Hz EMG</div>
                 </div>
                 <div style="color:{VIOLET_PRIMARY};font-weight:800;font-size:1.2rem;">→</div>
-                <div style="background:#07070B;border:1px solid rgba(120,87,255,0.45);border-radius:10px;padding:14px 16px;text-align:center;flex:1.1;">
+                <div style="background:#040406;border:1px solid rgba(255,255,255,0.28);border-radius:10px;padding:14px 16px;text-align:center;flex:1.1;">
                   <div style="font-weight:700;color:{LAVENDER_ACCENT};font-size:0.88rem;">NIDRA Encoder</div>
                   <div style="color:{TEXT_MUTED};font-size:0.75rem;">Channel Attention<br/>+ BiLSTM (w=20)</div>
                 </div>
                 <div style="color:{VIOLET_PRIMARY};font-weight:800;font-size:1.2rem;">→</div>
                 <div style="display:flex;flex-direction:column;gap:8px;flex:1.1;">
-                  <div style="background:#07070B;border:1px solid rgba(167,139,250,0.28);border-radius:8px;padding:8px 10px;text-align:center;">
+                  <div style="background:#040406;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 10px;text-align:center;">
                     <div style="font-weight:600;color:{TEXT_PRIMARY};font-size:0.82rem;">CAP Arousal Head</div>
                     <div style="color:{LAVENDER_ACCENT};font-size:0.72rem;">10 Hz A1 / A2 / A3</div>
                   </div>
-                  <div style="background:#07070B;border:1px solid rgba(167,139,250,0.28);border-radius:8px;padding:8px 10px;text-align:center;">
+                  <div style="background:#040406;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 10px;text-align:center;">
                     <div style="font-weight:600;color:{TEXT_PRIMARY};font-size:0.82rem;">Sleep Stage Head</div>
                     <div style="color:{LAVENDER_ACCENT};font-size:0.72rem;">30s Wake/N1–N3/REM</div>
                   </div>
@@ -629,7 +607,7 @@ elif screen == SCREENS[2]:
         mode="lines",
         line={"shape": "hv", "width": 2.2, "color": VIOLET_PRIMARY},
         fill="tozeroy",
-        fillcolor="rgba(120, 87, 255, 0.12)",
+        fillcolor="rgba(255, 255, 255, 0.08)",
         name="Ground Truth",
     ))
     fig_hyp.add_vline(
@@ -668,9 +646,9 @@ elif screen == SCREENS[2]:
             s_i = idx_f
         elif not flag and in_seg:
             in_seg = False
-            fig_sig.add_vrect(x0=s_i * 0.1, x1=idx_f * 0.1, fillcolor="rgba(120, 87, 255, 0.22)", line_width=0)
+            fig_sig.add_vrect(x0=s_i * 0.1, x1=idx_f * 0.1, fillcolor="rgba(113, 113, 122, 0.22)", line_width=0)
     if in_seg:
-        fig_sig.add_vrect(x0=s_i * 0.1, x1=30.0, fillcolor="rgba(120, 87, 255, 0.22)", line_width=0)
+        fig_sig.add_vrect(x0=s_i * 0.1, x1=30.0, fillcolor="rgba(113, 113, 122, 0.22)", line_width=0)
 
     fig_sig.update_layout(xaxis_title="Time (s)")
     fig_sig.update_yaxes(showticklabels=False)
@@ -772,7 +750,7 @@ elif screen == SCREENS[3]:
                 name="Ground Truth",
                 line={"shape": "hv", "width": 2.3, "color": VIOLET_PRIMARY},
                 fill="tozeroy",
-                fillcolor="rgba(120, 87, 255, 0.12)",
+                fillcolor="rgba(255, 255, 255, 0.08)",
             ))
             fig.add_trace(go.Scatter(
                 y=y_pr,
@@ -867,7 +845,7 @@ elif screen == SCREENS[4]:
             line={"shape": "spline", "smoothing": 1.15, "width": 2.5, "color": VIOLET_PRIMARY},
             marker={"size": 7, "color": VIOLET_PRIMARY},
             fill="tozeroy",
-            fillcolor="rgba(120, 87, 255, 0.18)",
+            fillcolor="rgba(255, 255, 255, 0.10)",
         ))
         fig_cap.add_trace(go.Scatter(
             x=pipe_names,
@@ -947,7 +925,7 @@ elif screen == SCREENS[5]:
             line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
             marker={"size": 7, "color": VIOLET_PRIMARY},
             fill="tozeroy",
-            fillcolor="rgba(120, 87, 255, 0.18)",
+            fillcolor="rgba(255, 255, 255, 0.10)",
         ))
         style_editorial_chart(
             fig_xai,
@@ -1009,7 +987,7 @@ elif screen == SCREENS[6]:
             mode="lines",
             line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
             fill="tozeroy",
-            fillcolor="rgba(120, 87, 255, 0.16)",
+            fillcolor="rgba(255, 255, 255, 0.10)",
         ))
         fig_cal.update_layout(xaxis_title="Predicted Confidence", yaxis_title="Empirical Accuracy")
         style_editorial_chart(fig_cal, title="Reliability Calibration Curve", height=340)
@@ -1024,7 +1002,7 @@ elif screen == SCREENS[6]:
         fig_cls.add_trace(go.Scatter(
             x=STAGE_NAMES, y=st_f1, name="Stage F1 (%)", mode="lines+markers",
             line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
-            marker={"size": 7, "color": VIOLET_PRIMARY}, fill="tozeroy", fillcolor="rgba(120, 87, 255, 0.16)",
+            marker={"size": 7, "color": VIOLET_PRIMARY}, fill="tozeroy", fillcolor="rgba(255, 255, 255, 0.10)",
         ))
         fig_cls.add_trace(go.Scatter(
             x=STAGE_NAMES, y=st_rec, name="Sensitivity (%)", mode="lines+markers",
@@ -1042,9 +1020,22 @@ elif screen == SCREENS[6]:
 
     cm = test_ref.get("confusion_matrix")
     if cm and len(cm) == 5:
-        with st.expander("Inspect Raw 5×5 Confusion Matrix"):
-            cm_df = pd.DataFrame(cm, index=[f"True {s}" for s in STAGE_NAMES], columns=[f"Pred {s}" for s in STAGE_NAMES])
-            st.dataframe(cm_df, use_container_width=True)
+        cm_arr = np.array(cm, dtype=np.float64)
+        cm_pct = 100.0 * cm_arr / np.maximum(cm_arr.sum(axis=1, keepdims=True), 1.0)
+        fig_cm = go.Figure(data=go.Heatmap(
+            z=cm_pct,
+            x=STAGE_NAMES,
+            y=STAGE_NAMES,
+            text=[[f"{cm_pct[i, j]:.0f}%" for j in range(5)] for i in range(5)],
+            texttemplate="%{text}",
+            textfont={"size": 12},
+            colorscale=[[0.0, BG_CARD], [0.5, LAVENDER_ACCENT], [1.0, VIOLET_PRIMARY]],
+            showscale=False,
+        ))
+        fig_cm.update_yaxes(autorange="reversed", title_text="Actual Stage")
+        fig_cm.update_xaxes(title_text="Predicted Stage")
+        style_editorial_chart(fig_cm, title="Confusion Matrix (Epoch Stage Classification)", height=340)
+        st.plotly_chart(fig_cm, use_container_width=True, config=PLOTLY_CFG)
 
     if cal:
         s7_insights = [
@@ -1093,28 +1084,25 @@ elif screen == SCREENS[7]:
 
         mean_f1s = [float(np.mean(grp_f1[g])) * 100.0 for g in grp_names]
         fig_cc = go.Figure()
-        fig_cc.add_trace(go.Scatter(
+        fig_cc.add_trace(go.Bar(
             x=grp_names,
             y=mean_accs,
             name="Cohort Accuracy (%)",
-            mode="lines+markers+text",
+            marker={"color": VIOLET_PRIMARY, "line": {"width": 0}, "cornerradius": 8},
             text=[f"{v:.1f}%" for v in mean_accs],
-            textposition="top center",
-            line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
-            marker={"size": 8, "color": VIOLET_PRIMARY},
-            fill="tozeroy",
-            fillcolor="rgba(120, 87, 255, 0.18)",
+            textposition="outside",
+            textfont={"color": TEXT_PRIMARY, "size": 12},
         ))
         fig_cc.add_trace(go.Scatter(
             x=grp_names,
             y=mean_f1s,
             name="Mean Macro-F1 (%)",
             mode="lines+markers",
-            line={"shape": "spline", "smoothing": 1.15, "width": 2.0, "dash": "dot", "color": LAVENDER_ACCENT},
-            marker={"size": 6, "color": LAVENDER_ACCENT},
+            line={"shape": "spline", "smoothing": 1.15, "width": 2.2, "dash": "dot", "color": LAVENDER_ACCENT},
+            marker={"size": 7, "color": LAVENDER_ACCENT},
         ))
-        fig_cc.update_yaxes(range=[0, 108], title_text="Score (%)")
-        style_editorial_chart(fig_cc, title="Cross-Condition Accuracy & Macro-F1 — Sleep Disorders", height=360)
+        fig_cc.update_yaxes(range=[0, 110], title_text="Score (%)")
+        style_editorial_chart(fig_cc, title="Cross-Condition Accuracy & Macro-F1 — Sleep Disorders", height=340)
         st.plotly_chart(fig_cc, use_container_width=True, config=PLOTLY_CFG)
 
         worst_s = min(subj_list, key=lambda x: x["macro_f1"])
@@ -1230,7 +1218,7 @@ elif screen == SCREENS[8]:
                         name="Model Confidence (Spline Overlay)",
                         line={"shape": "spline", "smoothing": 1.15, "width": 2.0, "color": LAVENDER_ACCENT},
                         fill="tozeroy",
-                        fillcolor="rgba(167, 139, 250, 0.14)",
+                        fillcolor="rgba(113, 113, 122, 0.08)",
                     ))
                     fig_h.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
                     fig_h.update_layout(xaxis_title="Epoch (30s)")
@@ -1252,7 +1240,7 @@ elif screen == SCREENS[8]:
                         name="Ground Truth (.txt)",
                         line={"shape": "hv", "width": 2.3, "color": VIOLET_PRIMARY},
                         fill="tozeroy",
-                        fillcolor="rgba(120, 87, 255, 0.12)",
+                        fillcolor="rgba(255, 255, 255, 0.08)",
                     ))
                     fig_h.add_trace(go.Scatter(
                         y=pred["stage_preds"],

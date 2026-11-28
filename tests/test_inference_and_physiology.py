@@ -305,3 +305,18 @@ def test_conditional_gt_evaluation_absent_vs_present(tmp_path: Path) -> None:
     js_gt = json.loads(build_analysis_summary_json({"edf_info": edf_info, "predictions": predictions}, phys, gt_eval=gt_eval))
     assert "ground_truth_evaluation" in js_gt
     assert js_gt["ground_truth_evaluation"]["stage_accuracy"] == 1.0
+
+
+def test_format_key_insights_html() -> None:
+    from src.inference.report_export import format_key_insights_html
+
+    card = format_key_insights_html(
+        "Key Insights",
+        [
+            "Normal sleep architecture <verified>.",
+            ("✓", "NREM CAP rate 22.6%."),
+        ],
+    )
+    assert "nidra-insights-card" in card
+    assert "&lt;verified&gt;" in card
+    assert "NREM CAP rate 22.6%." in card

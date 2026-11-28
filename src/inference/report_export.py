@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -321,3 +322,20 @@ def build_analysis_summary_json(
             k: v for k, v in gt_eval.items() if k != "gt_stage_array"
         }
     return json.dumps(payload, indent=2)
+
+
+def format_key_insights_html(title: str, insights: list[str] | list[tuple[str, str]]) -> str:
+    """Build sanitized HTML for the editorial Key Insights card."""
+    rows_html = []
+    for item in insights:
+        text = item[1] if isinstance(item, tuple) else item
+        rows_html.append(
+            f'<div class="nidra-insight-row"><span class="nidra-check">✓</span>'
+            f"<span>{html.escape(str(text))}</span></div>"
+        )
+    return (
+        f'<div class="nidra-insights-card">'
+        f'<div class="nidra-insights-title">{html.escape(title)}</div>'
+        f'{"".join(rows_html)}'
+        f"</div>"
+    )
