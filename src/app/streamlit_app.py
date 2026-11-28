@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -506,16 +507,51 @@ if screen == SCREENS[0]:
             """
             <div class="wiki-toc" id="wiki-toc-top">
               <div class="wiki-toc-title">Contents</div>
-              <a href="#wiki-article-top" target="_self">(Top)</a>
-              <a href="#what-is-nidra" target="_self">1. What is NIDRA?</a>
-              <a href="#purpose-relevance" target="_self">2. Purpose &amp; Clinical Relevance</a>
-              <a href="#what-nidra-does" target="_self">3. What NIDRA Does</a>
-              <a href="#models-used" target="_self">4. Models Used &amp; Why</a>
-              <a href="#dashboard-guide" target="_self">5. Dashboard Guide</a>
-              <a href="#limitations" target="_self">6. Limitations &amp; Scope</a>
+              <a href="javascript:void(0)" data-idx="top">(Top)</a>
+              <a href="javascript:void(0)" data-idx="0">1. What is NIDRA?</a>
+              <a href="javascript:void(0)" data-idx="1">2. Purpose &amp; Clinical Relevance</a>
+              <a href="javascript:void(0)" data-idx="2">3. What NIDRA Does</a>
+              <a href="javascript:void(0)" data-idx="3">4. Models Used &amp; Why</a>
+              <a href="javascript:void(0)" data-idx="4">5. Dashboard Guide</a>
+              <a href="javascript:void(0)" data-idx="5">6. Limitations &amp; Scope</a>
             </div>
             """,
             unsafe_allow_html=True,
+        )
+        components.html(
+            """
+            <script>
+            (function() {
+                function bindToc() {
+                    var pd = window.parent.document;
+                    var links = pd.querySelectorAll('.wiki-toc a[data-idx]');
+                    if (!links.length) { setTimeout(bindToc, 150); return; }
+                    links.forEach(function(a) {
+                        // remove any previously attached clone to avoid duplicate handlers
+                        var fresh = a.cloneNode(true);
+                        a.parentNode.replaceChild(fresh, a);
+                        fresh.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            var idx = fresh.getAttribute('data-idx');
+                            if (idx === 'top') {
+                                var art = pd.querySelector('.wiki-article');
+                                if (art) art.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            } else {
+                                var h2s = pd.querySelectorAll('.wiki-article h2');
+                                var target = h2s[parseInt(idx, 10)];
+                                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                        });
+                    });
+                }
+                // Wait for Streamlit to finish rendering before binding
+                if (document.readyState === 'complete') { setTimeout(bindToc, 300); }
+                else { window.addEventListener('load', function() { setTimeout(bindToc, 300); }); }
+            })();
+            </script>
+            """,
+            height=0,
         )
 
     with mid_col:
