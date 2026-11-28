@@ -160,6 +160,16 @@ st.markdown(
         position: sticky;
         top: 1rem;
     }}
+    /* Make the flex row containing the TOC align to the top so sticky works */
+    [data-testid="stHorizontalBlock"]:has(.wiki-toc) {{
+        align-items: flex-start !important;
+    }}
+    /* Pin the first column (TOC) so it stays in view while centre article scrolls */
+    [data-testid="stHorizontalBlock"]:has(.wiki-toc) > [data-testid="stColumn"]:first-child {{
+        position: sticky !important;
+        top: 1.25rem !important;
+        align-self: flex-start !important;
+    }}
     .wiki-toc-title {{
         font-size: 18px;
         font-weight: 700;
