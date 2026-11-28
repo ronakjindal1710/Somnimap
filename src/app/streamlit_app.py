@@ -173,6 +173,7 @@ st.markdown(
         text-decoration: none;
         font-size: 16px;
         padding: 7px 6px;
+        cursor: pointer;
         border-radius: 6px;
         transition: color 0.15s ease;
     }}
@@ -501,16 +502,42 @@ if screen == SCREENS[0]:
     with lhs_col:
         st.markdown(
             """
-            <div class="wiki-toc" id="top">
+            <div class="wiki-toc" id="wiki-toc-top">
               <div class="wiki-toc-title">Contents</div>
-              <a href="#top">(Top)</a>
-              <a href="#what-is-nidra">1. What is NIDRA?</a>
-              <a href="#purpose-relevance">2. Purpose &amp; Clinical Relevance</a>
-              <a href="#what-nidra-does">3. What NIDRA Does</a>
-              <a href="#models-used">4. Models Used &amp; Why</a>
-              <a href="#dashboard-guide">5. Dashboard Guide</a>
-              <a href="#limitations">6. Limitations &amp; Scope</a>
+              <a href="javascript:void(0)" onclick="scrollToSection('wiki-article-top')">(Top)</a>
+              <a href="javascript:void(0)" onclick="scrollToSection('what-is-nidra')">1. What is NIDRA?</a>
+              <a href="javascript:void(0)" onclick="scrollToSection('purpose-relevance')">2. Purpose &amp; Clinical Relevance</a>
+              <a href="javascript:void(0)" onclick="scrollToSection('what-nidra-does')">3. What NIDRA Does</a>
+              <a href="javascript:void(0)" onclick="scrollToSection('models-used')">4. Models Used &amp; Why</a>
+              <a href="javascript:void(0)" onclick="scrollToSection('dashboard-guide')">5. Dashboard Guide</a>
+              <a href="javascript:void(0)" onclick="scrollToSection('limitations')">6. Limitations &amp; Scope</a>
             </div>
+            <script>
+            function scrollToSection(id) {
+                // Try inside this iframe first, then escalate to parent frame
+                var el = document.getElementById(id);
+                if (!el) {
+                    try { el = window.parent.document.getElementById(id); } catch(e) {}
+                }
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    // Fallback: search all iframes in parent for the element
+                    try {
+                        var frames = window.parent.document.querySelectorAll('iframe');
+                        for (var i = 0; i < frames.length; i++) {
+                            try {
+                                var target = frames[i].contentDocument.getElementById(id);
+                                if (target) {
+                                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    break;
+                                }
+                            } catch(e) {}
+                        }
+                    } catch(e) {}
+                }
+            }
+            </script>
             """,
             unsafe_allow_html=True,
         )
@@ -518,7 +545,7 @@ if screen == SCREENS[0]:
     with mid_col:
         st.markdown(
             """
-            <div class="wiki-article">
+            <div class="wiki-article" id="wiki-article-top">
               <div class="wiki-title">NIDRA</div>
               <div class="wiki-hatnote">
                 Neural Inference for Deep, REM &amp; Arousal Architecture — an exploratory multi-task sleep-staging and Cyclic Alternating Pattern (CAP) arousal analysis platform.
