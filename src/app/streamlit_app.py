@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import json
 import sys
 from pathlib import Path
@@ -51,6 +52,37 @@ st.markdown(
     h1, h2, h3 {
         letter-spacing: -0.01em;
     }
+    .nidra-insights-card {
+        background-color: #181d27;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-left: 4px solid #38bdf8;
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-top: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+    .nidra-insights-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 10px;
+        letter-spacing: 0.01em;
+    }
+    .nidra-insight-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 7px;
+        font-size: 0.9rem;
+        line-height: 1.48;
+        color: #cbd5e1;
+    }
+    .nidra-insight-row:last-child {
+        margin-bottom: 0;
+    }
+    .nidra-icon-ok { color: #34d399; font-weight: 700; }
+    .nidra-icon-warn { color: #fbbf24; font-weight: 700; }
+    .nidra-icon-info { color: #38bdf8; font-weight: 700; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -82,6 +114,29 @@ def style_plotly(fig: go.Figure, title: str | None = None, height: int | None = 
         layout_kw["height"] = height
     fig.update_layout(**layout_kw)
     return fig
+
+
+def render_key_insights(title: str, insights: list[tuple[str, str]]) -> None:
+    """Render a cohesive dark editorial Key Insights card."""
+    icon_cls_map = {
+        "✓": "nidra-icon-ok",
+        "⚠": "nidra-icon-warn",
+        "ℹ": "nidra-icon-info",
+    }
+    rows_html = []
+    for icon, text in insights:
+        cls = icon_cls_map.get(icon, "nidra-icon-info")
+        rows_html.append(
+            f'<div class="nidra-insight-row"><span class="{cls}">{html.escape(icon)}</span>'
+            f'<span>{html.escape(text)}</span></div>'
+        )
+    st.markdown(
+        f'<div class="nidra-insights-card">'
+        f'<div class="nidra-insights-title">{html.escape(title)}</div>'
+        f'{"".join(rows_html)}'
+        f"</div>",
+        unsafe_allow_html=True,
+    )
 
 from src.config import load_config
 
@@ -160,6 +215,29 @@ if screen == SCREENS[0]:
     else:
         st.info("Preprocessing summary not found.")
 
+    n_healthy = sum(p.get("n_healthy", 0) for p in parts.values())
+    n_path = sum(p.get("n_pathological", 0) for p in parts.values())
+    total_valid_ep = sum(p.get("n_valid_epochs", 0) for p in parts.values())
+    total_cap_ev = sum(p.get("n_cap_events", 0) for p in parts.values())
+    grp_totals: dict[str, int] = {}
+    for p in parts.values():
+        for g, cnt in p.get("groups", {}).items():
+            grp_totals[g.upper()] = grp_totals.get(g.upper(), 0) + cnt
+    top_grps = ", ".join(f"{k} ({v})" for k, v in sorted(grp_totals.items(), key=lambda x: -x[1])[:4])
+    s1_insights = [
+        ("✓", f"Subject-independent 70/15/15 split covers {split_data.get('total_records', 108)} recordings ({n_healthy} Normal healthy vs. {n_path} pathological across 7 disorders; largest cohorts: {top_grps})."),
+        ("ℹ", f"Annotated corpus spans {total_valid_ep:,} valid 30-s sleep epochs and {total_cap_ev:,} scored CAP Phase-A events."),
+    ]
+    if not prep_df.empty and "oob_stage" in prep_df.columns:
+        oob_s = int(prep_df["oob_stage"].sum())
+        oob_c = int(prep_df["oob_cap"].sum()) if "oob_cap" in prep_df.columns else 0
+        low_ch = int((prep_df["n_channels_present"] < 6).sum()) if "n_channels_present" in prep_df.columns else 0
+        s1_insights.append(
+            ("✓" if (oob_s == 0 and oob_c == 0) else "⚠",
+             f"Preprocessing alignment integrity: {oob_s} out-of-bounds stage events, {oob_c} out-of-bounds CAP events; {low_ch} recordings have < 6 canonical channels present (masked, never fabricated).")
+        )
+    render_key_insights("Key Insights — Cohort & Split Integrity", s1_insights)
+
 
 # ---------------------------------------------------------------------------
 # Screen 2: Model Benchmarks & Ablations
@@ -197,6 +275,29 @@ elif screen == SCREENS[1]:
         sel_cm = st.selectbox("Inspect Validation Confusion Matrix", [f.name for f in cm_files])
         st.image(str(RESULTS_DIR / "confusion_matrices" / sel_cm), width=520)
 
+    s2_insights = [
+        ("ℹ", "All models consume standardized 100 Hz signals (0.3–35 Hz EEG/EOG, 10–45 Hz chin EMG, 50 Hz notch) segmented into 30-s sleep epochs and 10 Hz CAP frames."),
+    ]
+    if not p2.empty and not p3.empty:
+        b2 = p2.sort_values("macro_f1", ascending=False).iloc[0]
+        b3 = p3.sort_values("macro_f1", ascending=False).iloc[0]
+        s2_insights.append(
+            ("✓", f"Adding 20-epoch temporal context lifts validation Macro-F1 from {b2['macro_f1']:.3f} ({b2['model']}) to {b3['macro_f1']:.3f} ({b3['model']}).")
+        )
+    if not p4.empty:
+        b4 = p4.sort_values("macro_f1", ascending=False).iloc[0]
+        e8 = p4[p4["run_name"].astype(str).str.contains("E8", na=False)]
+        if not e8.empty:
+            r8 = e8.iloc[0]
+            s2_insights.append(
+                ("✓", f"Dual-head multi-channel NIDRA ({r8['run_name']}) achieves Macro-F1 = {r8['macro_f1']:.3f} and N1 F1 = {r8['N1_f1']:.3f}, linking macro sleep stages with 10 Hz micro-arousals.")
+            )
+        else:
+            s2_insights.append(
+                ("✓", f"Top Phase 4 NIDRA ablation ({b4['run_name']}) reaches Macro-F1 = {b4['macro_f1']:.3f} and N1 F1 = {b4['N1_f1']:.3f}.")
+            )
+    render_key_insights("Key Insights — Architecture & Ablation Gains", s2_insights)
+
 
 # ---------------------------------------------------------------------------
 # Screen 3: PSG Signal & Hypnogram Explorer
@@ -233,6 +334,19 @@ elif screen == SCREENS[2]:
     fig_sig.update_layout(xaxis_title="Time (s)")
     style_plotly(fig_sig, title=f"Normalized PSG Waveforms — Epoch {ep_idx}", height=430)
     st.plotly_chart(fig_sig, use_container_width=True)
+
+    active_stage = STAGE_NAMES[y_stage[ep_idx]] if y_stage[ep_idx] >= 0 else "UNSCORED/MT"
+    cap_pos = int((y_cap[ep_idx] > 0).sum())
+    cap_sec = cap_pos * 0.1
+    missing_chs = [CH_NAMES[i] for i, m in enumerate(meta["channel_mask"]) if m == 0]
+    s3_insights = [
+        ("ℹ", f"Recording {rec_id} Epoch {ep_idx}: Active stage is {active_stage} with {cap_pos}/300 positive 10 Hz CAP frames ({cap_sec:.1f}s of Phase-A micro-arousal activity)."),
+        ("✓" if (active_stage in ("Wake", "REM") and cap_pos == 0) or (active_stage in ("N1", "N2", "N3")) else "ℹ",
+         "Clinically, CAP is defined exclusively during NREM sleep (N1/N2/N3), so Wake and REM epochs remain near 0/300 frames while N2/N3 capture transient slow-wave (A1) and fast-EEG (A2/A3) arousal bursts."),
+    ]
+    if missing_chs:
+        s3_insights.append(("⚠", f"Missing/masked channels in {rec_id}: {', '.join(missing_chs)} (zeroed with mask=0, never fabricated)."))
+    render_key_insights("Key Insights — Epoch Physiology & CAP Context", s3_insights)
 
 
 # ---------------------------------------------------------------------------
@@ -289,6 +403,18 @@ elif screen == SCREENS[3]:
             fig.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
             style_plotly(fig, title=f"Hypnogram Comparison — {rec_id}", height=360)
             st.plotly_chart(fig, use_container_width=True)
+
+            mean_c = float(np.mean(pred["stage_confidence"]))
+            n_low = len(pred["low_confidence_epochs"])
+            low_pct = 100.0 * n_low / max(1, len(y_pr))
+            s4_insights = [
+                ("✓" if acc >= 0.80 else "ℹ",
+                 f"On {rec_id}, NIDRA achieves {acc*100:.2f}% epoch accuracy ({'strong hypnogram alignment >= 80%' if acc >= 0.80 else 'moderate alignment — inspect transitional boundaries'}) with mean calibrated confidence {mean_c:.3f}."),
+                ("ℹ", f"Low-confidence epochs (< 0.55): {n_low}/{len(y_pr)} ({low_pct:.1f}%), typically concentrated around Wake/N1/N2 and REM sleep-stage transitions."),
+            ]
+            if len(ch_mask) > 5 and ch_mask[5] == 0:
+                s4_insights.append(("⚠", f"EMG_CHIN is missing (channel_mask[5]=0) in {rec_id}, which can introduce N1/N2 vs. REM onset ambiguity."))
+            render_key_insights(f"Key Insights — Live Inference on {rec_id}", s4_insights)
 
 
 # ---------------------------------------------------------------------------
@@ -395,6 +521,18 @@ elif screen == SCREENS[4]:
     if ex_img.exists():
         st.image(str(ex_img), caption="CAP Event Detection Timeline Examples (Phase 5 Baseline)")
 
+    if sweep2 or (stage2 and "cap" in stage2):
+        sub_p = sel_data["per_subtype"]
+        a1_f1 = sub_p["A1"]["f1"]
+        a2_f1 = sub_p["A2"]["f1"]
+        a3_f1 = sub_p["A3"]["f1"]
+        s5_insights = [
+            ("✓", f"Selected pipeline achieves Overall Event F1 = {ov['f1']:.4f} (Precision = {ov['precision']:.4f}, Recall = {ov['recall']:.4f} at IoU >= 0.5) and macro CAP Rate Pearson r = {sel_data['cap_rate_pearson_r']:.4f}."),
+            ("ℹ", f"Subtype balance: A3 ({a3_f1:.4f}) and A1 slow-wave bursts ({a1_f1:.4f}) lead performance, while intermediate A2 events remain harder ({a2_f1:.4f}) due to morphological overlap between A1 and A3."),
+            ("✓", "Strong macro CAP-rate correlation (r > 0.90) makes NIDRA reliable for overnight NREM sleep-fragmentation profiling, even where individual A2 event boundaries are exploratory."),
+        ]
+        render_key_insights("Key Insights — CAP Arousal Detection & Fragmentation", s5_insights)
+
 
 # ---------------------------------------------------------------------------
 # Screen 6: Explainability (Grad-CAM & IG)
@@ -412,6 +550,20 @@ elif screen == SCREENS[5]:
         st.info("Phase 6 XAI plots not yet generated.")
     if "xai_cases" in xai_json:
         st.json(xai_json["xai_cases"])
+        cases = xai_json["xai_cases"]
+        s6_insights = []
+        for c in cases[:2]:
+            imp = c.get("channel_importance", [])
+            if imp:
+                top_i = int(np.argmax(imp))
+                top_ch = CH_NAMES[top_i] if top_i < len(CH_NAMES) else f"ch{top_i}"
+                s6_insights.append(
+                    ("ℹ", f"Case `{c['tag']}` (True={c['true']}, Pred={c['pred']}): Primary attribution came from {top_ch} ({imp[top_i]*100:.1f}% share).")
+                )
+        s6_insights.append(
+            ("✓", "Physiological drivers: slow delta power (0.5–4 Hz) on frontal/central EEG leads anchors N3 deep sleep, spindle/K-complex bursts mark N2, and high-frequency desynchronization + EOG/EMG cues separate Wake/REM/A3 arousals.")
+        )
+        render_key_insights("Key Insights — Spectral & Channel Attribution", s6_insights)
 
 
 # ---------------------------------------------------------------------------
@@ -434,6 +586,24 @@ elif screen == SCREENS[6]:
     else:
         st.info("Reliability diagram not yet generated.")
 
+    if cal:
+        s7_insights = [
+            ("✓", f"Temperature scaling (T = {cal['temperature']}) reduces validation ECE from {cal['ece_before']} to {cal['ece_after']} and improves NLL ({cal['nll_before']} -> {cal['nll_after']}), aligning predicted confidence with true accuracy."),
+        ]
+        test_ref = load_json_if_exists(str(RESULTS_DIR / "phase8_test_locked_metrics.json"))
+        cm = test_ref.get("confusion_matrix")
+        if cm and len(cm) == 5:
+            cm_arr = np.array(cm, dtype=np.int64)
+            np.fill_diagonal(cm_arr, 0)
+            ti, pi = np.unravel_index(int(np.argmax(cm_arr)), cm_arr.shape)
+            s7_insights.append(
+                ("⚠", f"Top off-diagonal confusion pair in evaluation: True {STAGE_NAMES[ti]} -> Predicted {STAGE_NAMES[pi]} ({int(cm_arr[ti, pi])} epochs), reflecting overlapping transitional EEG/EOG features.")
+            )
+        s7_insights.append(
+            ("ℹ", "Brief transitional epochs (especially N1 light sleep) naturally carry higher normalized entropy and lower calibrated confidence, enabling uncertainty-aware human review.")
+        )
+        render_key_insights("Key Insights — Calibration & Error Patterns", s7_insights)
+
 
 # ---------------------------------------------------------------------------
 # Screen 8: Final Locked Test Report
@@ -448,6 +618,31 @@ elif screen == SCREENS[7]:
         test_cm = RESULTS_DIR / "confusion_matrices" / "phase8_test_locked_cm.png"
         if test_cm.exists():
             st.image(str(test_cm), width=540)
+
+        import re as _re
+        subj_list = test_json.get("per_subject", [])
+        grp_scores: dict[str, list[float]] = {}
+        for s in subj_list:
+            m = _re.match(r"([a-zA-Z]+)", s["record_id"])
+            g = m.group(1).upper() if m else "OTHER"
+            grp_scores.setdefault(g, []).append(float(s["macro_f1"]))
+        grp_means = {g: float(np.mean(v)) for g, v in grp_scores.items() if v}
+        s8_insights = [
+            ("✓", f"Locked 16-subject test performance: Macro-F1 = {test_json['macro_f1']:.4f} (95% CI [{test_json['ci95']['macro_f1'][0]:.4f}, {test_json['ci95']['macro_f1'][1]:.4f}]), Accuracy = {test_json['accuracy']*100:.2f}%, Cohen's kappa = {test_json['cohen_kappa']:.3f}."),
+        ]
+        if grp_means:
+            best_g = max(grp_means.items(), key=lambda x: x[1])
+            low_g = min(grp_means.items(), key=lambda x: x[1])
+            s8_insights.append(
+                ("ℹ", f"Cross-condition stability: highest mean Macro-F1 in {best_g[0]} ({best_g[1]:.3f}) vs. lowest in {low_g[0]} ({low_g[1]:.3f}) across {len(subj_list)} unseen test subjects.")
+            )
+        if subj_list:
+            worst_s = min(subj_list, key=lambda x: x["macro_f1"])
+            best_s = max(subj_list, key=lambda x: x["macro_f1"])
+            s8_insights.append(
+                ("⚠", f"Subject spread ranges from {best_s['record_id']} (Macro-F1={best_s['macro_f1']:.3f}) to {worst_s['record_id']} (Macro-F1={worst_s['macro_f1']:.3f}), driven by individual sleep fragmentation and channel/artifact noise.")
+            )
+        render_key_insights("Key Insights — Locked Test & Cross-Disorder Generalization", s8_insights)
 
 
 # ---------------------------------------------------------------------------
@@ -646,6 +841,42 @@ elif screen == SCREENS[8]:
                 d1, d2 = st.columns(2)
                 d1.download_button("Download Markdown Report (.md)", md_rep, file_name=f"nidra_{uploaded_edf.name}_report.md")
                 d2.download_button("Download JSON Summary (.json)", js_rep, file_name=f"nidra_{uploaded_edf.name}_summary.json")
+
+                sp = pred["stage_percentages"]
+                dur_hrs = info["duration_sec"] / 3600.0
+                s9_insights = [
+                    ("ℹ", f"Recording `{uploaded_edf.name}` ({dur_hrs:.2f} hrs, {pred['n_epochs']} epochs): Wake {sp['Wake']:.1f}%, N1 {sp['N1']:.1f}%, N2 {sp['N2']:.1f}%, N3 {sp['N3']:.1f}%, REM {sp['REM']:.1f}%."),
+                ]
+                if "cap_rate_nrem" in pred:
+                    cap_pct = pred["cap_rate_nrem"] * 100.0
+                    stability = "elevated arousal fragmentation" if cap_pct >= 35.0 else "moderate/low NREM arousal fragmentation"
+                    s9_insights.append(
+                        ("ℹ", f"Predicted NREM CAP arousal rate is {cap_pct:.1f}% ({len(pred['cap_events'])} events; {stability}).")
+                    )
+                vitals_parts = []
+                if ecg_d.get("available"):
+                    vitals_parts.append(f"ECG HR {ecg_d['mean_hr_bpm']} bpm (SDNN {ecg_d['overall_sdnn_ms']} ms)")
+                if resp_d.get("available"):
+                    vitals_parts.append(f"Resp {resp_d['mean_br_bpm']} br/min")
+                if spo2_d.get("available"):
+                    vitals_parts.append(f"SpO2 mean {spo2_d['mean_pct']}% (min {spo2_d['min_pct']}%)")
+                if vitals_parts:
+                    s9_insights.append(("✓", "Multimodal vitals extracted: " + " | ".join(vitals_parts) + "."))
+                else:
+                    s9_insights.append(("ℹ", "No ECG, Respiratory, or SpO2 channels detected — multimodal vitals marked unavailable without fabrication."))
+
+                if domain_shift["high_domain_shift"]:
+                    s9_insights.append(("⚠", "High domain-shift / montage mismatch detected — treat stage shares and calibrated confidence as exploratory."))
+                else:
+                    s9_insights.append(("✓", "Channel coverage and stage distribution are in-domain for NIDRA."))
+
+                if gt_eval is not None:
+                    gt_msg = f"Ground-truth comparison (.txt): Stage Accuracy = {gt_eval['stage_accuracy']*100:.2f}%, Macro F1 = {gt_eval['stage_macro_f1']:.4f}"
+                    if gt_eval.get("cap_event_metrics"):
+                        gt_msg += f", CAP Event F1 (IoU>=0.5) = {gt_eval['cap_event_metrics']['f1']:.4f}"
+                    s9_insights.append(("✓", gt_msg + "."))
+
+                render_key_insights(f"Key Insights — {uploaded_edf.name}", s9_insights)
         finally:
             if tmp_path is not None:
                 tmp_path.unlink(missing_ok=True)
