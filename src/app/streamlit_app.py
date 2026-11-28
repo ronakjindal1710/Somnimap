@@ -1,4 +1,4 @@
-"""Phase 7 — SomniMap Interactive Clinical & Research Dashboard (8 Screens)."""
+"""NIDRA Interactive Clinical & Research Dashboard (9 Screens)."""
 
 from __future__ import annotations
 
@@ -17,7 +17,71 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-st.set_page_config(page_title="SomniMap — Sleep & CAP Analytics", layout="wide", page_icon="🌙")
+st.set_page_config(
+    page_title="NIDRA — Neural Inference for Deep, REM & Arousal Architecture",
+    layout="wide",
+    page_icon="🌙",
+)
+
+st.markdown(
+    """
+    <style>
+    .block-container {
+        padding-top: 2.1rem;
+        padding-bottom: 2.5rem;
+    }
+    [data-testid="stMetric"] {
+        background-color: #181d27;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 14px 16px;
+    }
+    [data-testid="stMetricLabel"] {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+    [data-testid="stMetricValue"] {
+        color: #f1f5f9;
+    }
+    [data-testid="stDataFrame"] {
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    h1, h2, h3 {
+        letter-spacing: -0.01em;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+def style_plotly(fig: go.Figure, title: str | None = None, height: int | None = None) -> go.Figure:
+    """Apply cohesive dark editorial styling across all dashboard charts."""
+    layout_kw: dict = {
+        "template": "plotly_dark",
+        "paper_bgcolor": "rgba(0,0,0,0)",
+        "plot_bgcolor": "rgba(24,29,39,0.55)",
+        "font": {"color": "#f1f5f9", "size": 12},
+        "margin": {"l": 48, "r": 24, "t": 56, "b": 44},
+        "legend": {
+            "orientation": "h",
+            "yanchor": "bottom",
+            "y": 1.02,
+            "xanchor": "right",
+            "x": 1.0,
+            "bgcolor": "rgba(0,0,0,0)",
+        },
+        "xaxis": {"gridcolor": "rgba(255,255,255,0.07)", "zerolinecolor": "rgba(255,255,255,0.1)"},
+        "yaxis": {"gridcolor": "rgba(255,255,255,0.07)", "zerolinecolor": "rgba(255,255,255,0.1)"},
+    }
+    if title is not None:
+        layout_kw["title"] = {"text": title, "font": {"size": 15, "color": "#f1f5f9"}}
+    if height is not None:
+        layout_kw["height"] = height
+    fig.update_layout(**layout_kw)
+    return fig
 
 from src.config import load_config
 
@@ -49,14 +113,14 @@ def load_json_if_exists(path: str) -> dict:
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 
 
-st.sidebar.title("🌙 SomniMap")
-st.sidebar.caption("Multi-Scale Sleep Staging & CAP Event Detection")
+st.sidebar.title("🌙 NIDRA")
+st.sidebar.caption("Neural Inference for Deep, REM & Arousal Architecture")
 
 SCREENS = [
     "1. Cohort & Split Overview",
     "2. Model Benchmarks & Ablations",
     "3. PSG Signal & Hypnogram Explorer",
-    "4. Live SomniMapNet Inference",
+    "4. Live NIDRA Inference",
     "5. CAP Event Detection (A1/A2/A3)",
     "6. Explainability (Grad-CAM & IG)",
     "7. Calibration & Reliability",
@@ -85,8 +149,8 @@ if screen == SCREENS[0]:
         for grp, cnt in info.get("groups", {}).items():
             rows.append({"Split": sp, "Diagnostic Group": grp.upper(), "Subjects": cnt})
     grp_df = pd.DataFrame(rows)
-    fig = px.bar(grp_df, x="Diagnostic Group", y="Subjects", color="Split", barmode="group",
-                 title="Diagnostic Group Stratification Across Locked Splits (70/15/15)")
+    fig = px.bar(grp_df, x="Diagnostic Group", y="Subjects", color="Split", barmode="group")
+    style_plotly(fig, title="Diagnostic Group Stratification Across Locked Splits (70/15/15)")
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Preprocessing Summary")
@@ -106,24 +170,24 @@ elif screen == SCREENS[1]:
     p3 = load_csv_if_exists(str(RESULTS_DIR / "phase3_temporal.csv"))
     p4 = load_csv_if_exists(str(RESULTS_DIR / "phase4_somnimap.csv"))
 
-    tab2, tab3, tab4 = st.tabs(["Phase 2: Epoch Baselines", "Phase 3: Temporal Context", "Phase 4: SomniMapNet E3–E8"])
+    tab2, tab3, tab4 = st.tabs(["Phase 2: Epoch Baselines", "Phase 3: Temporal Context", "Phase 4: NIDRA (SomniMapNet E3–E8)"])
     with tab2:
         if not p2.empty:
             st.dataframe(p2, use_container_width=True)
-            fig = px.bar(p2, x="model", y=["macro_f1", "cohen_kappa", "N1_f1"], barmode="group",
-                         title="Phase 2 Epoch-Only Baselines")
+            fig = px.bar(p2, x="model", y=["macro_f1", "cohen_kappa", "N1_f1"], barmode="group")
+            style_plotly(fig, title="Phase 2 Epoch-Only Baselines")
             st.plotly_chart(fig, use_container_width=True)
     with tab3:
         if not p3.empty:
             st.dataframe(p3, use_container_width=True)
-            fig = px.bar(p3, x="model", y=["macro_f1", "cohen_kappa", "N1_f1"], barmode="group",
-                         title="Phase 3 Temporal Context Models (20-epoch windows)")
+            fig = px.bar(p3, x="model", y=["macro_f1", "cohen_kappa", "N1_f1"], barmode="group")
+            style_plotly(fig, title="Phase 3 Temporal Context Models (20-epoch windows)")
             st.plotly_chart(fig, use_container_width=True)
     with tab4:
         if not p4.empty:
             st.dataframe(p4, use_container_width=True)
-            fig = px.bar(p4, x="run_name", y=["macro_f1", "cohen_kappa", "N1_f1"], barmode="group",
-                         title="Phase 4 SomniMapNet Ablations (E3–E8)")
+            fig = px.bar(p4, x="run_name", y=["macro_f1", "cohen_kappa", "N1_f1"], barmode="group")
+            style_plotly(fig, title="Phase 4 NIDRA Ablations (E3–E8)")
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Phase 4 results not yet generated.")
@@ -155,7 +219,8 @@ elif screen == SCREENS[2]:
     fig_hyp = go.Figure()
     fig_hyp.add_trace(go.Scatter(y=valid_ep, mode="lines", line_shape="hv", name="Sleep Stage"))
     fig_hyp.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
-    fig_hyp.update_layout(title=f"Ground-Truth Hypnogram — {rec_id}", xaxis_title="Epoch (30s)", height=280)
+    fig_hyp.update_layout(xaxis_title="Epoch (30s)")
+    style_plotly(fig_hyp, title=f"Ground-Truth Hypnogram — {rec_id}", height=300)
     st.plotly_chart(fig_hyp, use_container_width=True)
 
     ep_idx = st.slider("Inspect 30-s Epoch", 0, len(y_stage) - 1, min(100, len(y_stage) - 1))
@@ -165,15 +230,16 @@ elif screen == SCREENS[2]:
     for c_i, cname in enumerate(CH_NAMES):
         if meta["channel_mask"][c_i] == 1:
             fig_sig.add_trace(go.Scatter(x=t, y=epochs[ep_idx, :, c_i] + c_i * 4, name=cname, line=dict(width=1)))
-    fig_sig.update_layout(title=f"Normalized PSG Waveforms — Epoch {ep_idx}", xaxis_title="Time (s)", height=420)
+    fig_sig.update_layout(xaxis_title="Time (s)")
+    style_plotly(fig_sig, title=f"Normalized PSG Waveforms — Epoch {ep_idx}", height=430)
     st.plotly_chart(fig_sig, use_container_width=True)
 
 
 # ---------------------------------------------------------------------------
-# Screen 4: Live SomniMapNet Inference
+# Screen 4: Live NIDRA Inference
 # ---------------------------------------------------------------------------
 elif screen == SCREENS[3]:
-    st.title("4. Live SomniMapNet Inference")
+    st.title("4. Live NIDRA Inference")
     ckpt_files = sorted((PROJ_ROOT / "checkpoints").glob("phase4_*.pt")) if (PROJ_ROOT / "checkpoints").exists() else []
     if not ckpt_files:
         st.warning("No Phase 4 checkpoints found in checkpoints/.")
@@ -219,9 +285,9 @@ elif screen == SCREENS[3]:
 
             fig = go.Figure()
             fig.add_trace(go.Scatter(y=np.where(mask, y_gt, np.nan), name="Ground Truth (Reference)", line_shape="hv"))
-            fig.add_trace(go.Scatter(y=y_pr, name="Predicted (SomniMapNet)", line_shape="hv", line=dict(dash="dot")))
+            fig.add_trace(go.Scatter(y=y_pr, name="Predicted (NIDRA)", line_shape="hv", line=dict(dash="dot")))
             fig.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
-            fig.update_layout(title=f"Hypnogram Comparison — {rec_id}", height=340)
+            style_plotly(fig, title=f"Hypnogram Comparison — {rec_id}", height=360)
             st.plotly_chart(fig, use_container_width=True)
 
 
@@ -392,12 +458,17 @@ elif screen == SCREENS[8]:
     import tempfile
     from src.inference.edf_loader import inspect_edf
     from src.inference.predictor import predict_from_edf
-    from src.inference.report_export import assess_domain_shift, build_analysis_report_markdown, build_analysis_summary_json
+    from src.inference.report_export import (
+        assess_domain_shift,
+        build_analysis_report_markdown,
+        build_analysis_summary_json,
+        evaluate_against_reference_txt,
+    )
     from src.physiology.multimodal import analyze_multimodal_physiology
 
     st.title("9. Raw EDF Upload, Multimodal Physiology & Report Export")
     st.info(
-        "**Research Disclaimer:** SomniMap is an exploratory sleep-signal research platform, not a clinical diagnostic system. "
+        "**Research Disclaimer:** NIDRA (*Neural Inference for Deep, REM & Arousal Architecture*) is an exploratory sleep-signal research platform, not a clinical diagnostic system. "
         "Model predictions and signal-derived physiological metrics are shown separately."
     )
 
@@ -438,13 +509,24 @@ elif screen == SCREENS[8]:
             with st.expander("Channel Mapping & Multimodal Extras"):
                 st.json({"canonical_mapping": info["canonical_mapping"], "multimodal_extras": info["multimodal_extras"]})
 
-            if info["compatible"] and st.button("Run SomniMapNet + Multimodal Analysis"):
-                with st.spinner("Preprocessing EDF and running SomniMapNet inference..."):
+            if info["compatible"] and st.button("Run NIDRA + Multimodal Analysis"):
+                with st.spinner("Preprocessing EDF and running NIDRA inference..."):
                     res = predict_from_edf(tmp_path, stride_epochs=stride_opt, cfg=CFG)
                     pred = res["predictions"]
                     phys = analyze_multimodal_physiology(
                         res["extras_raw"], res["loaded_sfreq"], pred["stage_preds"], pred.get("cap_events")
                     )
+
+                gt_eval = None
+                if tmp_txt_path is not None:
+                    try:
+                        gt_eval = evaluate_against_reference_txt(
+                            tmp_txt_path, info.get("start_datetime"), pred
+                        )
+                        if gt_eval is None:
+                            st.info("Optional .txt reference could not be aligned (missing EDF start_datetime or unsupported .txt format).")
+                    except Exception as exc:
+                        st.info(f"Optional .txt reference could not be aligned ({exc}).")
 
                 st.subheader("Predictive Outputs — Hypnogram & Uncertainty")
                 domain_shift = assess_domain_shift(info, pred)
@@ -458,35 +540,54 @@ elif screen == SCREENS[8]:
                 u3.metric("Low-Conf Epochs (<0.55)", f"{n_low}/{pred['n_epochs']} ({100.0*n_low/max(1,pred['n_epochs']):.1f}%)")
 
                 fig_h = go.Figure()
-                fig_h.add_trace(go.Scatter(y=pred["stage_preds"], name="Predicted (SomniMapNet)", line_shape="hv"))
-                if tmp_txt_path is not None:
-                    try:
-                        from src.data.annotation_parser import parse_txt_annotations
-                        from src.data.preprocessing import align_annotations_to_epochs
-                        parsed_ref = parse_txt_annotations(tmp_txt_path)
-                        if parsed_ref.get("parse_ok") and info.get("start_datetime"):
-                            gt_st, _ = align_annotations_to_epochs(
-                                parsed_ref, info["start_datetime"], pred["n_epochs"]
-                            )
-                            fig_h.add_trace(go.Scatter(
-                                y=np.where(gt_st >= 0, gt_st, np.nan),
-                                name="Ground Truth Reference (.txt)",
-                                line_shape="hv",
-                                line=dict(dash="dot"),
-                            ))
-                        else:
-                            st.info("Optional .txt reference could not be aligned (missing EDF start_datetime or unsupported .txt format).")
-                    except Exception as exc:
-                        st.info(f"Optional .txt reference could not be aligned ({exc}).")
+                fig_h.add_trace(go.Scatter(y=pred["stage_preds"], name="Predicted (NIDRA)", line_shape="hv"))
+                if gt_eval is not None:
+                    gt_st = gt_eval["gt_stage_array"]
+                    fig_h.add_trace(go.Scatter(
+                        y=np.where(gt_st >= 0, gt_st, np.nan),
+                        name="Ground Truth Reference (.txt)",
+                        line_shape="hv",
+                        line=dict(dash="dot"),
+                    ))
                 fig_h.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
-                fig_h.update_layout(title="Sleep-Stage Hypnogram (Predictions vs Optional Reference)", xaxis_title="Epoch (30s)", height=310)
+                fig_h.update_layout(xaxis_title="Epoch (30s)")
+                style_plotly(fig_h, title="Sleep-Stage Hypnogram (Predictions vs Optional Reference)", height=330)
                 st.plotly_chart(fig_h, use_container_width=True)
 
                 fig_u = go.Figure()
                 fig_u.add_trace(go.Scatter(y=pred["stage_confidence"], name="Calibrated Confidence", line=dict(width=1.2)))
                 fig_u.add_trace(go.Scatter(y=pred["stage_entropy"], name="Normalized Entropy", line=dict(width=1.2, dash="dot")))
-                fig_u.update_layout(title="Per-Epoch Predictive Uncertainty", xaxis_title="Epoch (30s)", height=260)
+                fig_u.update_layout(xaxis_title="Epoch (30s)")
+                style_plotly(fig_u, title="Per-Epoch Predictive Uncertainty", height=280)
                 st.plotly_chart(fig_u, use_container_width=True)
+
+                if gt_eval is not None:
+                    st.subheader("Ground-Truth Evaluation (vs. Uploaded Reference .txt)")
+                    st.caption("Computed post-hoc against uploaded reference annotations (zero model leakage)")
+                    g1, g2, g3, g4 = st.columns(4)
+                    g1.metric("Overall Accuracy", f"{gt_eval['stage_accuracy'] * 100:.2f}%")
+                    g2.metric("Macro F1", f"{gt_eval['stage_macro_f1']:.4f}")
+                    g3.metric("Macro Precision", f"{gt_eval['stage_macro_precision']:.4f}")
+                    g4.metric("Macro Recall", f"{gt_eval['stage_macro_recall']:.4f}")
+                    st.dataframe(pd.DataFrame(gt_eval["per_stage"]), use_container_width=True)
+
+                    if gt_eval.get("cap_frame_metrics") or gt_eval.get("cap_event_metrics"):
+                        cf = gt_eval.get("cap_frame_metrics")
+                        ce = gt_eval.get("cap_event_metrics")
+                        st.markdown("**CAP Ground-Truth Metrics (Valid NREM)**")
+                        if cf and ce:
+                            m1, m2, m3, m4, m5, m6 = st.columns(6)
+                            m1.metric("Frame Prec", f"{cf['precision']:.4f}")
+                            m2.metric("Frame Rec", f"{cf['recall']:.4f}")
+                            m3.metric("Frame F1", f"{cf['f1']:.4f}")
+                            m4.metric("Event Prec (IoU≥0.5)", f"{ce['precision']:.4f}")
+                            m5.metric("Event Rec (IoU≥0.5)", f"{ce['recall']:.4f}")
+                            m6.metric("Event F1 (IoU≥0.5)", f"{ce['f1']:.4f}")
+                        elif cf:
+                            m1, m2, m3 = st.columns(3)
+                            m1.metric("Frame Precision", f"{cf['precision']:.4f}")
+                            m2.metric("Frame Recall", f"{cf['recall']:.4f}")
+                            m3.metric("Frame F1", f"{cf['f1']:.4f}")
 
                 if "cap_events" in pred:
                     st.subheader("Predictive Outputs — CAP Events (Predicted NREM)")
@@ -540,11 +641,11 @@ elif screen == SCREENS[8]:
                 if not spo2_d.get("available"):
                     st.caption(f"SpO2: {spo2_d.get('reason', 'Not available')}")
 
-                md_rep = build_analysis_report_markdown(res, phys, recording_name=uploaded_edf.name)
-                js_rep = build_analysis_summary_json(res, phys, recording_name=uploaded_edf.name)
+                md_rep = build_analysis_report_markdown(res, phys, recording_name=uploaded_edf.name, gt_eval=gt_eval)
+                js_rep = build_analysis_summary_json(res, phys, recording_name=uploaded_edf.name, gt_eval=gt_eval)
                 d1, d2 = st.columns(2)
-                d1.download_button("Download Markdown Report (.md)", md_rep, file_name=f"{uploaded_edf.name}_report.md")
-                d2.download_button("Download JSON Summary (.json)", js_rep, file_name=f"{uploaded_edf.name}_summary.json")
+                d1.download_button("Download Markdown Report (.md)", md_rep, file_name=f"nidra_{uploaded_edf.name}_report.md")
+                d2.download_button("Download JSON Summary (.json)", js_rep, file_name=f"nidra_{uploaded_edf.name}_summary.json")
         finally:
             if tmp_path is not None:
                 tmp_path.unlink(missing_ok=True)

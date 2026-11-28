@@ -1,6 +1,6 @@
-# SomniMap
+# NIDRA (*Neural Inference for Deep, REM & Arousal Architecture*)
 
-Explainable Multi-Task Deep Learning for Sleep Architecture Mapping on the PhysioNet CAP Sleep Database.
+Explainable Multi-Task Deep Learning for Sleep Architecture Mapping & CAP Arousal Event Detection on the PhysioNet CAP Sleep Database.
 
 ## Setup
 - Raw dataset (read-only): `C:/Users/prave/OneDrive/Desktop/Somnimap/dataset`

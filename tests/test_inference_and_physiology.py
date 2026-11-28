@@ -240,3 +240,68 @@ def test_predictor_loads_unregistered_no_chan_attn_w10_checkpoint() -> None:
     dummy_mask = np.ones(6, dtype=np.float32)
     out = pred_wrapper.predict_arrays(dummy_x, dummy_mask, stride_epochs=2)
     assert out["n_epochs"] == 12
+
+
+def test_conditional_gt_evaluation_absent_vs_present(tmp_path: Path) -> None:
+    from src.inference.report_export import (
+        build_analysis_report_markdown,
+        build_analysis_summary_json,
+        evaluate_against_reference_txt,
+    )
+
+    # Synthetic 3-epoch predictions
+    cap_frames = np.zeros((3, 300), dtype=np.int64)
+    cap_frames[1, 50:90] = 2  # 4.0s A2 at t=35..39s
+    predictions = {
+        "n_epochs": 3,
+        "stage_preds": np.array([0, 2, 3], dtype=np.int64),
+        "stage_confidence": np.array([0.9, 0.85, 0.88], dtype=np.float32),
+        "stage_entropy": np.array([0.1, 0.15, 0.12], dtype=np.float32),
+        "low_confidence_epochs": [],
+        "stage_counts": {"Wake": 1, "N1": 0, "N2": 1, "N3": 1, "REM": 0},
+        "stage_percentages": {"Wake": 33.33, "N1": 0.0, "N2": 33.33, "N3": 33.33, "REM": 0.0},
+        "cap_frames": cap_frames,
+        "cap_events": [{"subtype": 2, "subtype_name": "A2", "start_s": 35.0, "end_s": 39.0, "duration_s": 4.0, "epoch_idx": 1}],
+        "cap_rate_nrem": 0.0667,
+        "cap_event_counts": {"A1": 0, "A2": 1, "A3": 0},
+        "provenance": {"checkpoint": "test.pt", "context_type": "bilstm", "in_channels": 6, "temperature": 1.1757, "stride_epochs": 5},
+    }
+    edf_info = {
+        "file_name": "demo.edf",
+        "duration_sec": 90.0,
+        "header_sfreq_hz": 100.0,
+        "canonical_mapping": {"EEG_C4_A1": ["C4-A1", None], "EEG_F4_C4": ["F4-C4", None], "EEG_C4_P4": ["C4-P4", None], "EEG_FP2_F4": ["FP2-F4", None]},
+        "multimodal_extras": {},
+        "warnings": [],
+    }
+    phys = {"disclaimer": "test", "ecg": {"available": False}, "respiratory": {"available": False}, "spo2": {"available": False}}
+
+    # 1. Absent .txt -> None and omitted from reports
+    assert evaluate_against_reference_txt(None, "2000-01-01T23:59:30+00:00", predictions) is None
+    md_blind = build_analysis_report_markdown({"edf_info": edf_info, "predictions": predictions}, phys, gt_eval=None)
+    assert "NIDRA Research Analysis Report" in md_blind
+    assert "Ground-Truth Evaluation" not in md_blind
+
+    # 2. Present .txt -> exact metrics computed and included in reports
+    txt_file = tmp_path / "ref.txt"
+    txt_file.write_text(
+        "Sleep Stage\tTime [hh:mm:ss]\tEvent\tDuration[s]\tLocation\n"
+        "W\t23:59:30\tSLEEP-S0\t30\tEEG\n"
+        "N2\t00:00:00\tSLEEP-S2\t30\tEEG\n"
+        "N2\t00:00:05\tMCAP-A2\t4\tEEG\n"
+        "N3\t00:00:30\tSLEEP-S3\t30\tEEG\n",
+        encoding="utf-8",
+    )
+    gt_eval = evaluate_against_reference_txt(txt_file, "2000-01-01T23:59:30+00:00", predictions)
+    assert gt_eval is not None
+    assert gt_eval["n_scored_epochs"] == 3
+    assert gt_eval["stage_accuracy"] == 1.0
+    assert gt_eval["cap_frame_metrics"]["f1"] == 1.0
+    assert gt_eval["cap_event_metrics"]["f1"] == 1.0
+
+    md_gt = build_analysis_report_markdown({"edf_info": edf_info, "predictions": predictions}, phys, gt_eval=gt_eval)
+    assert "Ground-Truth Evaluation" in md_gt
+    import json
+    js_gt = json.loads(build_analysis_summary_json({"edf_info": edf_info, "predictions": predictions}, phys, gt_eval=gt_eval))
+    assert "ground_truth_evaluation" in js_gt
+    assert js_gt["ground_truth_evaluation"]["stage_accuracy"] == 1.0

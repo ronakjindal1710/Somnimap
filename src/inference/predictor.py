@@ -1,4 +1,4 @@
-"""Standalone SomniMapNet predictor for raw EDF recordings and preprocessed arrays."""
+"""Standalone NIDRA (SomniMapNet) predictor for raw EDF recordings and preprocessed arrays."""
 
 from __future__ import annotations
 
@@ -235,3 +235,6 @@ def predict_from_edf(
         "extras_raw": pre["extras_raw"],
         "predictions": pred,
     }
+
+
+NidraPredictor = SomniMapPredictor

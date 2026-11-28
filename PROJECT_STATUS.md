@@ -1,4 +1,4 @@
-# SomniMap — Project Status & Production Summary
+# NIDRA (*Neural Inference for Deep, REM & Arousal Architecture*) — Project Status & Production Summary
 
 **Last Updated:** 2026-11-27  
 **Environment:** PyTorch (GPU RTX A5000 for Phases 3–8 training; portable CPU/GPU inference on laptop), MLflow (SQLite backend)  

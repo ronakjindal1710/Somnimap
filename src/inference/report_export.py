@@ -1,12 +1,19 @@
-"""Structured Markdown & JSON research report generator for SomniMap EDF analyses."""
+"""Structured Markdown & JSON research report generator for NIDRA EDF analyses."""
 
 from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import numpy as np
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+
+from src.data.annotation_parser import parse_txt_annotations
+from src.data.preprocessing import align_annotations_to_epochs
+from src.training.eval_cap import extract_events_from_frames, match_events
+from src.training.metrics import STAGE_NAMES
 
 
 CANONICAL_EEG_CHANNELS = ("EEG_C4_A1", "EEG_C3_A2", "EEG_F4_C4", "EEG_C4_P4", "EEG_FP2_F4")
@@ -55,10 +62,102 @@ def assess_domain_shift(edf_info: dict[str, Any], predictions: dict[str, Any]) -
     }
 
 
+def evaluate_against_reference_txt(
+    txt_path: Path | str | None,
+    edf_start_datetime: str | None,
+    predictions: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Compute post-hoc stage and CAP metrics against an uploaded RemLogic .txt file.
+
+    Returns None when no .txt file is provided or alignment cannot be performed.
+    """
+    if txt_path is None or not edf_start_datetime:
+        return None
+    p = Path(txt_path)
+    if not p.exists():
+        return None
+
+    parsed_ref = parse_txt_annotations(p)
+    if not parsed_ref.get("parse_ok"):
+        return None
+
+    n_epochs = int(predictions["n_epochs"])
+    gt_st, gt_cap = align_annotations_to_epochs(parsed_ref, edf_start_datetime, n_epochs)
+    valid_stage = gt_st >= 0
+    if not valid_stage.any():
+        return None
+
+    y_true = gt_st[valid_stage]
+    y_pred = np.asarray(predictions["stage_preds"], dtype=np.int64)[valid_stage]
+
+    acc = float(accuracy_score(y_true, y_pred))
+    m_prec, m_rec, m_f1, _ = precision_recall_fscore_support(
+        y_true, y_pred, labels=[0, 1, 2, 3, 4], average="macro", zero_division=0
+    )
+    p_cls, r_cls, f_cls, s_cls = precision_recall_fscore_support(
+        y_true, y_pred, labels=[0, 1, 2, 3, 4], average=None, zero_division=0
+    )
+    per_stage = [
+        {
+            "Stage": STAGE_NAMES[i],
+            "Precision": round(float(p_cls[i]), 4),
+            "Recall": round(float(r_cls[i]), 4),
+            "F1": round(float(f_cls[i]), 4),
+            "Support": int(s_cls[i]),
+        }
+        for i in range(5)
+    ]
+
+    cap_frame_metrics: dict[str, Any] | None = None
+    cap_event_metrics: dict[str, Any] | None = None
+    nrem_mask = np.isin(gt_st, [1, 2, 3])
+    if nrem_mask.any() and "cap_frames" in predictions:
+        gt_bin = (gt_cap[nrem_mask] > 0).ravel()
+        pr_bin = (np.asarray(predictions["cap_frames"])[nrem_mask] > 0).ravel()
+        fp_prec, fp_rec, fp_f1, _ = precision_recall_fscore_support(
+            gt_bin, pr_bin, average="binary", zero_division=0
+        )
+        cap_frame_metrics = {
+            "n_nrem_epochs": int(nrem_mask.sum()),
+            "precision": round(float(fp_prec), 4),
+            "recall": round(float(fp_rec), 4),
+            "f1": round(float(fp_f1), 4),
+        }
+
+        if parsed_ref.get("cap_events") or gt_cap.max() > 0:
+            gt_events = extract_events_from_frames(
+                gt_cap.ravel(), sfreq_hz=10.0, min_dur_s=0.5, merge_gap_s=0.5
+            )
+            ev_res = match_events(gt_events, predictions.get("cap_events", []), iou_thresh=0.5)
+            cap_event_metrics = {
+                "n_gt_events": len(gt_events),
+                "n_pred_events": len(predictions.get("cap_events", [])),
+                "precision": ev_res["precision"],
+                "recall": ev_res["recall"],
+                "f1": ev_res["f1"],
+                "tp": ev_res["tp"],
+                "fp": ev_res["fp"],
+                "fn": ev_res["fn"],
+            }
+
+    return {
+        "n_scored_epochs": int(valid_stage.sum()),
+        "stage_accuracy": round(acc, 4),
+        "stage_macro_f1": round(float(m_f1), 4),
+        "stage_macro_precision": round(float(m_prec), 4),
+        "stage_macro_recall": round(float(m_rec), 4),
+        "per_stage": per_stage,
+        "cap_frame_metrics": cap_frame_metrics,
+        "cap_event_metrics": cap_event_metrics,
+        "gt_stage_array": gt_st,
+    }
+
+
 def build_analysis_report_markdown(
     result: dict[str, Any],
     physiology: dict[str, Any],
     recording_name: str | None = None,
+    gt_eval: dict[str, Any] | None = None,
 ) -> str:
     """Generate a self-contained Markdown research report with provenance and caveats."""
     info = result["edf_info"]
@@ -68,10 +167,11 @@ def build_analysis_report_markdown(
     now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
     lines = [
-        f"# SomniMap Research Analysis Report — `{display_name}`",
+        f"# NIDRA Research Analysis Report — `{display_name}`",
         "",
         f"**Generated:** {now_str}  ",
-        f"**Research Disclaimer:** *SomniMap is an exploratory sleep-signal research tool, not a validated clinical diagnostic device. Predictive outputs must not be interpreted as medical diagnoses.*",
+        "**Platform:** NIDRA (*Neural Inference for Deep, REM & Arousal Architecture*)  ",
+        "**Research Disclaimer:** *NIDRA is an exploratory sleep-signal research tool, not a validated clinical diagnostic device. Predictive outputs must not be interpreted as medical diagnoses.*",
         "",
         "---",
         "",
@@ -152,6 +252,37 @@ def build_analysis_report_markdown(
     else:
         lines.append(f"- **SpO2:** Unavailable ({spo2.get('reason', 'not present')})")
 
+    if gt_eval is not None:
+        lines += [
+            "",
+            "## 5. Ground-Truth Evaluation (vs. Uploaded Reference `.txt`)",
+            "*Computed post-hoc against uploaded reference annotations (zero model leakage).*",
+            f"- **Sleep-Stage (5-Class, {gt_eval['n_scored_epochs']} scored epochs):** "
+            f"Accuracy = **{gt_eval['stage_accuracy']*100:.2f}%** | "
+            f"Macro F1 = **{gt_eval['stage_macro_f1']:.4f}** | "
+            f"Macro Precision = **{gt_eval['stage_macro_precision']:.4f}** | "
+            f"Macro Recall = **{gt_eval['stage_macro_recall']:.4f}**",
+            "",
+            "| Stage | Precision | Recall | F1 | Support |",
+            "|---|---:|---:|---:|---:|",
+        ]
+        for row in gt_eval["per_stage"]:
+            lines.append(
+                f"| {row['Stage']} | {row['Precision']:.4f} | {row['Recall']:.4f} | {row['F1']:.4f} | {row['Support']} |"
+            )
+        if gt_eval.get("cap_frame_metrics"):
+            cf = gt_eval["cap_frame_metrics"]
+            lines.append(
+                f"- **CAP Frame Metrics (Valid NREM, {cf['n_nrem_epochs']} epochs):** "
+                f"Precision = **{cf['precision']:.4f}** | Recall = **{cf['recall']:.4f}** | F1 = **{cf['f1']:.4f}**"
+            )
+        if gt_eval.get("cap_event_metrics"):
+            ce = gt_eval["cap_event_metrics"]
+            lines.append(
+                f"- **CAP Event Metrics (IoU >= 0.5, GT={ce['n_gt_events']}, Pred={ce['n_pred_events']}):** "
+                f"Precision = **{ce['precision']:.4f}** | Recall = **{ce['recall']:.4f}** | F1 = **{ce['f1']:.4f}**"
+            )
+
     return "\n".join(lines)
 
 
@@ -159,6 +290,7 @@ def build_analysis_summary_json(
     result: dict[str, Any],
     physiology: dict[str, Any],
     recording_name: str | None = None,
+    gt_eval: dict[str, Any] | None = None,
 ) -> str:
     """Serialize lightweight JSON summary (without large raw signal arrays)."""
     pred = result["predictions"]
@@ -166,7 +298,8 @@ def build_analysis_summary_json(
     if recording_name:
         edf_info["file_name"] = recording_name
     domain_shift = assess_domain_shift(edf_info, pred)
-    payload = {
+    payload: dict[str, Any] = {
+        "platform": "NIDRA (Neural Inference for Deep, REM & Arousal Architecture)",
         "edf_info": edf_info,
         "provenance": pred["provenance"],
         "domain_shift_assessment": domain_shift,
@@ -183,4 +316,8 @@ def build_analysis_summary_json(
             for k, v in physiology.items()
         },
     }
+    if gt_eval is not None:
+        payload["ground_truth_evaluation"] = {
+            k: v for k, v in gt_eval.items() if k != "gt_stage_array"
+        }
     return json.dumps(payload, indent=2)
