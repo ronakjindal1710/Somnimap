@@ -147,19 +147,30 @@ st.markdown(
         font-weight: 700;
     }}
 
-    /* Buttons */
-    .stButton > button, .stDownloadButton > button {{
-        background-color: {BG_CARD};
-        color: {TEXT_PRIMARY};
-        border: 1px solid rgba(120, 87, 255, 0.55);
-        border-radius: 10px;
-        padding: 0.5rem 1.15rem;
-        font-weight: 600;
+    /* Primary vs Secondary buttons (used for full-width 9-pill navbar & actions) */
+    button[kind="primary"] {{
+        background-color: {VIOLET_PRIMARY} !important;
+        border: 1px solid {VIOLET_PRIMARY} !important;
+        color: {TEXT_PRIMARY} !important;
+        border-radius: 10px !important;
+        font-size: 0.80rem !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        padding: 0.45rem 0.5rem !important;
     }}
-    .stButton > button:hover, .stDownloadButton > button:hover {{
-        background-color: {VIOLET_PRIMARY};
-        border-color: {VIOLET_PRIMARY};
-        color: {TEXT_PRIMARY};
+    button[kind="secondary"] {{
+        background-color: {BG_CARD} !important;
+        border: 1px solid rgba(167, 139, 250, 0.22) !important;
+        color: {TEXT_PRIMARY} !important;
+        border-radius: 10px !important;
+        font-size: 0.80rem !important;
+        font-weight: 500 !important;
+        white-space: nowrap !important;
+        padding: 0.45rem 0.5rem !important;
+    }}
+    button[kind="secondary"]:hover {{
+        border-color: {VIOLET_PRIMARY} !important;
+        color: {LAVENDER_ACCENT} !important;
     }}
 
     /* Clean borderless dataframes (no green artifact) */
@@ -383,7 +394,22 @@ SCREENS = [
     "8. Cross-Condition",
     "9. Raw EDF Upload",
 ]
-screen = st.radio("Navigation", SCREENS, horizontal=True, label_visibility="collapsed")
+if "active_screen" not in st.session_state:
+    st.session_state["active_screen"] = SCREENS[0]
+
+nav_cols = st.columns(len(SCREENS), gap="small")
+for idx_s, s_label in enumerate(SCREENS):
+    is_active = st.session_state["active_screen"] == s_label
+    if nav_cols[idx_s].button(
+        s_label,
+        key=f"nav_btn_{idx_s}",
+        use_container_width=True,
+        type="primary" if is_active else "secondary",
+    ):
+        st.session_state["active_screen"] = s_label
+        st.rerun()
+
+screen = st.session_state["active_screen"]
 split_data = load_split_manifest()
 
 
