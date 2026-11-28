@@ -160,19 +160,19 @@ st.markdown(
         top: 1rem;
     }}
     .wiki-toc-title {{
-        font-size: 1.05rem;
+        font-size: 18px;
         font-weight: 700;
         color: #FFFFFF;
         border-bottom: 1px solid rgba(255, 255, 255, 0.12);
         padding-bottom: 8px;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }}
     .wiki-toc a {{
         display: block;
         color: #A1A1AA;
         text-decoration: none;
-        font-size: 0.96rem;
-        padding: 6px 4px;
+        font-size: 16px;
+        padding: 7px 6px;
         border-radius: 6px;
         transition: color 0.15s ease;
     }}
@@ -186,7 +186,7 @@ st.markdown(
         padding: 4px 18px 24px 12px;
     }}
     .wiki-title {{
-        font-size: 2.5rem;
+        font-size: 42px;
         font-weight: 800;
         color: #FFFFFF;
         border-bottom: 1px solid rgba(255, 255, 255, 0.16);
@@ -194,47 +194,47 @@ st.markdown(
         margin-bottom: 12px;
     }}
     .wiki-hatnote {{
-        font-size: 1.0rem;
+        font-size: 16px;
         font-style: italic;
         color: #A1A1AA;
-        margin-bottom: 22px;
+        margin-bottom: 24px;
     }}
     .wiki-article h2 {{
-        font-size: 1.55rem;
+        font-size: 26px;
         font-weight: 700;
         color: #FFFFFF;
         border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-        padding-bottom: 6px;
-        margin-top: 28px;
-        margin-bottom: 12px;
+        padding-bottom: 8px;
+        margin-top: 30px;
+        margin-bottom: 14px;
     }}
     .wiki-article h3 {{
-        font-size: 1.2rem;
+        font-size: 21px;
         font-weight: 600;
         color: #FFFFFF;
-        margin-top: 18px;
-        margin-bottom: 8px;
+        margin-top: 20px;
+        margin-bottom: 10px;
     }}
     .wiki-article p, .wiki-article li {{
-        font-size: 1.08rem;
+        font-size: 18px;
         line-height: 1.75;
         color: #E4E4E7;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }}
     .wiki-infobox {{
         background-color: {BG_CARD};
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 10px;
-        padding: 16px 18px;
+        padding: 18px 18px;
         margin-bottom: 16px;
     }}
     .wiki-infobox-head {{
         background: rgba(255, 255, 255, 0.10);
         color: #FFFFFF;
         font-weight: 700;
-        font-size: 1.02rem;
+        font-size: 17px;
         text-align: center;
-        padding: 9px 10px;
+        padding: 10px 10px;
         border-radius: 6px;
         margin-bottom: 12px;
     }}
@@ -242,9 +242,9 @@ st.markdown(
         display: flex;
         justify-content: space-between;
         gap: 12px;
-        padding: 8px 2px;
+        padding: 9px 2px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        font-size: 0.92rem;
+        font-size: 15px;
     }}
     .wiki-infobox-row:last-child {{ border-bottom: none; }}
     .wiki-ib-k {{ color: #A1A1AA; font-weight: 600; }}
@@ -462,7 +462,7 @@ st.markdown(
 )
 
 SCREENS = [
-    "0. Home",
+    "Home",
     "1. Overview",
     "2. Architecture",
     "3. PSG Explorer",
@@ -473,7 +473,7 @@ SCREENS = [
     "8. Cross-Condition",
     "9. Raw EDF Upload",
 ]
-if "active_screen" not in st.session_state:
+if st.session_state.get("active_screen") not in SCREENS:
     st.session_state["active_screen"] = SCREENS[0]
 
 nav_cols = st.columns(len(SCREENS), gap="small")
