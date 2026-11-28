@@ -151,20 +151,19 @@ st.markdown(
         color: #FFFFFF !important;
     }}
 
-    /* Wikipedia-style Home Page */
+    /* Wikipedia-style Home Page (borderless article & TOC directly on #040406, RHS infobox only) */
     .wiki-toc {{
-        background-color: {BG_CARD};
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
-        padding: 18px 18px;
+        background: transparent;
+        border: none;
+        padding: 8px 10px;
         position: sticky;
         top: 1rem;
     }}
     .wiki-toc-title {{
-        font-size: 0.92rem;
+        font-size: 1.05rem;
         font-weight: 700;
         color: #FFFFFF;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
         padding-bottom: 8px;
         margin-bottom: 10px;
     }}
@@ -172,8 +171,8 @@ st.markdown(
         display: block;
         color: #A1A1AA;
         text-decoration: none;
-        font-size: 0.84rem;
-        padding: 5px 4px;
+        font-size: 0.96rem;
+        padding: 6px 4px;
         border-radius: 6px;
         transition: color 0.15s ease;
     }}
@@ -182,63 +181,70 @@ st.markdown(
         background: rgba(255, 255, 255, 0.05);
     }}
     .wiki-article {{
-        background-color: {BG_CARD};
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
-        padding: 26px 30px;
+        background: transparent;
+        border: none;
+        padding: 4px 18px 24px 12px;
     }}
     .wiki-title {{
-        font-size: 2.0rem;
+        font-size: 2.5rem;
         font-weight: 800;
         color: #FFFFFF;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-        padding-bottom: 8px;
-        margin-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+        padding-bottom: 10px;
+        margin-bottom: 12px;
     }}
     .wiki-hatnote {{
-        font-size: 0.88rem;
+        font-size: 1.0rem;
         font-style: italic;
         color: #A1A1AA;
-        margin-bottom: 18px;
+        margin-bottom: 22px;
     }}
     .wiki-article h2 {{
-        font-size: 1.25rem;
+        font-size: 1.55rem;
         font-weight: 700;
         color: #FFFFFF;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
         padding-bottom: 6px;
-        margin-top: 22px;
-        margin-bottom: 10px;
+        margin-top: 28px;
+        margin-bottom: 12px;
+    }}
+    .wiki-article h3 {{
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #FFFFFF;
+        margin-top: 18px;
+        margin-bottom: 8px;
     }}
     .wiki-article p, .wiki-article li {{
-        font-size: 0.93rem;
-        line-height: 1.65;
+        font-size: 1.08rem;
+        line-height: 1.75;
         color: #E4E4E7;
+        margin-bottom: 10px;
     }}
     .wiki-infobox {{
         background-color: {BG_CARD};
-        border: 1px solid rgba(255, 255, 255, 0.10);
-        border-radius: 14px;
-        padding: 18px 18px;
-        margin-bottom: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 16px;
     }}
     .wiki-infobox-head {{
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.10);
         color: #FFFFFF;
         font-weight: 700;
-        font-size: 0.92rem;
+        font-size: 1.02rem;
         text-align: center;
-        padding: 8px 10px;
-        border-radius: 8px;
+        padding: 9px 10px;
+        border-radius: 6px;
         margin-bottom: 12px;
     }}
     .wiki-infobox-row {{
         display: flex;
         justify-content: space-between;
-        gap: 10px;
-        padding: 7px 2px;
+        gap: 12px;
+        padding: 8px 2px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        font-size: 0.82rem;
+        font-size: 0.92rem;
     }}
     .wiki-infobox-row:last-child {{ border-bottom: none; }}
     .wiki-ib-k {{ color: #A1A1AA; font-weight: 600; }}
@@ -515,54 +521,63 @@ if screen == SCREENS[0]:
             <div class="wiki-article">
               <div class="wiki-title">NIDRA</div>
               <div class="wiki-hatnote">
-                From Neural Inference for Deep, REM &amp; Arousal Architecture — an exploratory multi-task sleep-staging and Cyclic Alternating Pattern (CAP) arousal analysis platform.
+                Neural Inference for Deep, REM &amp; Arousal Architecture — an exploratory multi-task sleep-staging and Cyclic Alternating Pattern (CAP) arousal analysis platform.
               </div>
 
               <h2 id="what-is-nidra">1. What is NIDRA?</h2>
               <p>
-                <strong>NIDRA</strong> (<em>Neural Inference for Deep, REM &amp; Arousal Architecture</em>) is an end-to-end deep learning and multimodal signal-analysis platform designed for overnight human polysomnography (<strong>PSG</strong>). Trained and evaluated on the PhysioNet <strong>CAP Sleep Database</strong> (108 full-night EDF recordings across healthy controls and seven sleep-disorder cohorts), NIDRA jointly decodes macro sleep architecture (30-second epochs) and fine-grained micro-arousal dynamics (10 Hz CAP Phase-A events) from standardized EEG, EOG, and chin EMG signals.
+                <strong>NIDRA</strong> (<em>Neural Inference for Deep, REM &amp; Arousal Architecture</em>) is an end-to-end deep learning and multimodal signal-analysis platform built for automated interpretation of overnight human polysomnography (<strong>PSG</strong>). Developed and validated on the PhysioNet <strong>CAP Sleep Database</strong> (108 full-night EDF recordings spanning healthy sleepers and seven clinical sleep-disorder cohorts), NIDRA jointly decodes macro sleep architecture (30-second epochs across <code>Wake</code>, <code>N1</code>, <code>N2</code>, <code>N3</code>, and <code>REM</code>) alongside fine-grained <strong>10 Hz</strong> Cyclic Alternating Pattern (CAP) Phase-A micro-arousals (<code>A1</code>, <code>A2</code>, <code>A3</code>).
+              </p>
+              <p>
+                Unlike black-box single-channel classifiers, NIDRA enforces strict subject-independent evaluation (75 Train / 17 Validation / 16 Locked Test subjects), preserves explicit channel-presence masks without ever fabricating missing sensors, calibrates predictive probabilities via temperature scaling (<code>T = 1.1757</code>), and couples neural predictions with signal-derived cardiorespiratory analytics (ECG HR/HRV, respiration rate, and SpO<sub>2</sub>).
               </p>
 
               <h2 id="purpose-relevance">2. Purpose &amp; Clinical Relevance</h2>
               <p>
-                Manual sleep scoring requires trained technologists to inspect 8-hour multi-channel PSG traces epoch by epoch—and annotating <strong>Cyclic Alternating Pattern (CAP)</strong> micro-arousals (subtypes <strong>A1</strong> slow-wave, <strong>A2</strong> mixed, and <strong>A3</strong> fast-EEG bursts) at sub-second resolution is even more labor-intensive and prone to inter-scorer variability.
+                Standard overnight sleep diagnostics rely on manual visual scoring by sleep technologists, who inspect 8 hours of multi-channel EEG, EOG, and EMG traces in 30-second windows. Scoring <strong>Cyclic Alternating Pattern (CAP)</strong>—a periodic EEG marker of NREM sleep instability composed of Phase-A arousal bursts (<code>A1</code> slow-wave, <code>A2</code> mixed, <code>A3</code> fast desynchronized EEG) and Phase-B recovery intervals—requires sub-second annotation and is rarely performed in routine clinics due to its extreme labor cost.
               </p>
               <ul>
-                <li><strong>Sleep Fragmentation Beyond Macro Stages:</strong> Two nights with identical N2/N3 percentages can have vastly different restorative quality depending on NREM CAP arousal density.</li>
-                <li><strong>Cross-Disorder Insight:</strong> Pathologies such as Insomnia, Nocturnal Frontal Lobe Epilepsy (NFLE), RBD, Narcolepsy, PLM, SDB, and Bruxism exhibit distinct macro-stage and CAP instability signatures.</li>
-                <li><strong>Transparent Decision Support:</strong> Rather than returning opaque labels, NIDRA pairs temperature-calibrated confidence scores, Grad-CAM / Integrated Gradients attributions, and domain-shift montage warnings.</li>
+                <li><strong>Quantifying Sleep Fragmentation Beyond Macro Stages:</strong> Two patients can show identical N2 and N3 percentages while experiencing vastly different restorative sleep quality; NREM CAP rate directly measures underlying cortical arousal instability.</li>
+                <li><strong>Cross-Disorder Phenotyping:</strong> NIDRA spans eight clinical cohorts—Normal controls (<code>N</code>), Insomnia (<code>INS</code>), Nocturnal Frontal Lobe Epilepsy (<code>NFLE</code>), REM Sleep Behavior Disorder (<code>RBD</code>), Narcolepsy (<code>NARCO</code>), Periodic Limb Movements (<code>PLM</code>), Sleep-Disordered Breathing (<code>SDB</code>), and Bruxism (<code>BRUX</code>).</li>
+                <li><strong>Uncertainty-Aware &amp; Explainable Review:</strong> Transitional epochs (especially <code>N1</code> light sleep) carry higher inter-scorer ambiguity; NIDRA surfaces calibrated confidence, normalized Shannon entropy, 1D Grad-CAM, and Integrated Gradients so clinicians and researchers know <em>why</em> a stage or arousal was predicted and when to double-check.</li>
               </ul>
 
               <h2 id="what-nidra-does">3. What NIDRA Does</h2>
-              <ul>
-                <li><strong>Leakage-Safe Standardization:</strong> Resamples raw EDF channels to <strong>100 Hz</strong> (50 Hz notch, 0.3–35 Hz EEG/EOG, 10–45 Hz chin EMG) with per-recording robust z-score normalization and explicit <code>channel_mask</code> tracking (missing channels are zeroed, never fabricated).</li>
-                <li><strong>Dual-Head Joint Inference:</strong> Simultaneously outputs 5-class sleep stages (<code>Wake</code>, <code>N1</code>, <code>N2</code>, <code>N3</code>, <code>REM</code>) every 30 s and CAP Phase-A probabilities (<code>None</code>, <code>A1</code>, <code>A2</code>, <code>A3</code>) at <strong>10 Hz</strong> using overlapping <code>stride=5</code> window averaging.</li>
-                <li><strong>Calibrated CAP Post-Processing:</strong> Applies validation-tuned 10 Hz smoothing, NREM masking, <code>A2</code> calibration, and duration/gap filtering (<code>min_dur_s=2.5 s</code>, <code>merge_gap_s=1.5 s</code>), achieving macro CAP-rate Pearson <strong>r = 0.9319</strong> on <code>val</code>.</li>
-                <li><strong>Conditional Multimodal Vitals:</strong> Extracts ECG heart rate &amp; HRV (SDNN/RMSSD), respiratory rate, and SpO<sub>2</sub> saturation strictly when those sensors exist in the uploaded EDF, and exports self-contained <code>.md</code> and <code>.json</code> reports.</li>
-              </ul>
+              <h3>Signal Standardization &amp; Channel Hygiene</h3>
+              <p>
+                Raw EDF recordings vary widely in sampling rate (100 Hz to 512 Hz) and montage naming. NIDRA extracts mapped canonical leads (<code>EEG_C4_A1</code>, <code>EEG_F4_C4</code>, <code>EEG_C4_P4</code>, <code>EEG_FP2_F4</code>, <code>EOG</code>, <code>EMG_CHIN</code>, plus <code>EEG_C3_A2</code> backup), applies a 50 Hz notch filter, band-pass filters (0.3–35 Hz for EEG/EOG; 10–45 Hz for chin EMG), resamples to a uniform <strong>100 Hz</strong>, and applies per-recording robust z-score normalization. Missing leads are masked to zero rather than interpolated or synthesized.
+              </p>
+              <h3>Joint Macro-Stage &amp; Micro-Arousal Inference</h3>
+              <p>
+                Using overlapping 20-epoch windows (<code>stride = 5</code> epochs), NIDRA produces 30-s sleep-stage probabilities and 10 Hz CAP frame probabilities simultaneously. Zero-retrain post-processing applies 10 Hz temporal smoothing (<code>smooth_frames = 7</code>), NREM masking, <code>A2</code> calibration (<code>a2_mult = 2.0</code>), and duration/gap filtering (<code>min_dur_s = 2.5 s</code>, <code>merge_gap_s = 1.5 s</code>), lifting validation CAP Event F1 from <code>0.2986</code> to <strong>0.4326</strong> and achieving macro CAP-rate Pearson correlation <strong>r = 0.9319</strong>.
+              </p>
+              <h3>Conditional Multimodal Physiology &amp; Domain-Shift Guardrails</h3>
+              <p>
+                When ECG, respiratory effort/flow, or SpO<sub>2</sub> channels are present in an uploaded EDF, NIDRA computes stage-stratified heart rate, SDNN/RMSSD HRV, CAP-locked heart-rate shifts, respiratory rate, and oxygen desaturation metrics. If a recording uses a non-CAP fallback montage (such as Sleep-EDF <code>Fpz-Cz</code>) or misses &gt;2 canonical EEG channels, NIDRA automatically raises a <strong>High Domain-Shift Warning</strong> so high softmax confidence is never mistaken for in-domain reliability.
+              </p>
 
               <h2 id="models-used">4. Models Used &amp; Why</h2>
               <p>
-                NIDRA was developed through a systematic 3-phase ablation hierarchy on a strict subject-independent <strong>70 / 15 / 15</strong> split (75 Train / 17 Val / 16 Locked Test):
+                NIDRA was selected through a controlled three-phase benchmarking pipeline on the locked 70/15/15 split:
               </p>
               <ul>
-                <li><strong>Phase 2 — Single-Epoch Baselines (RF, SVM, CNN1D, ResNet1D, InceptionTime):</strong> Fast per-epoch baselines, but limited on transitional <code>N1</code> sleep because 30-s windows lack surrounding sleep-cycle context.</li>
-                <li><strong>Phase 3 — Temporal Context Models (CNN-BiLSTM, CNN-TCN, CNN-Transformer, TemporalUNet):</strong> Adding 20-epoch sequence context (10 minutes) substantially improved macro-stage continuity and <code>N1</code> detection.</li>
-                <li><strong>Phase 4 — Flagship NIDRA Dual-Head Architecture (<code>E8_dualhead</code>):</strong> Combines a <strong>1D Multi-Scale CNN</strong> local feature extractor, <strong>Channel Attention</strong> (dynamically weighting EEG/EOG/EMG leads), a <strong>20-epoch Bidirectional LSTM</strong> for long-range sleep-cycle context, and <strong>Dual Classification Heads</strong> (30-s Stage + 10 Hz CAP). <em>Why this won:</em> multi-channel attention handles missing/noisy leads gracefully while joint CAP supervision sharpens NREM micro-arousal sensitivity without sacrificing sleep-stage Macro-F1 (<strong>0.7382</strong> on locked test; <strong>78.93%</strong> accuracy).</li>
+                <li><strong>Phase 2 — Single-Epoch Baselines (RF, SVM, CNN1D, ResNet1D, InceptionTime):</strong> Evaluated 30-s epochs in isolation. While effective on clear <code>Wake</code> and <code>N3</code> slow-wave sleep, single-epoch models struggled on transitional <code>N1</code> sleep because they lacked surrounding sleep-cycle context.</li>
+                <li><strong>Phase 3 — Temporal Sequence Models (CNN-BiLSTM, CNN-TCN, CNN-Transformer, TemporalUNet):</strong> Modeling 20-epoch sequences (10 minutes of context) substantially improved macro-stage continuity and <code>N1</code> F1 by capturing sleep-stage transitions.</li>
+                <li><strong>Phase 4 — Flagship NIDRA Dual-Head Architecture (<code>E8_dualhead</code>):</strong> Uses a shared <strong>1D Multi-Scale CNN</strong> encoder, a <strong>Channel Attention</strong> module that weights available EEG/EOG/EMG leads, a <strong>20-epoch Bidirectional LSTM</strong> for bidirectional temporal context, and <strong>Dual Output Heads</strong> (30-s Stage + 10 Hz CAP). <em>Why this architecture won:</em> multi-channel attention tolerates missing/noisy leads, while joint CAP supervision sharpens NREM micro-arousal representation without sacrificing macro sleep staging (<strong>0.7382</strong> locked test Macro-F1; <strong>78.93%</strong> accuracy; <strong>&kappa; = 0.713</strong>).</li>
               </ul>
 
               <h2 id="dashboard-guide">5. Dashboard Guide (Screens 1–9)</h2>
               <ul>
-                <li><strong>1. Overview &amp; 2. Architecture:</strong> Cohort stratification, preprocessing coverage, channel masks, and dual-head pipeline benchmarks.</li>
-                <li><strong>3. PSG Explorer &amp; 4. Live Inference:</strong> Inspect 100 Hz EEG/EOG/EMG traces with 10 Hz CAP overlays and run live checkpoint inference on validation recordings.</li>
-                <li><strong>5. CAP Benchmark &amp; 6. Explainability:</strong> Compare baseline vs. calibrated CAP event detection (IoU &ge; 0.5) and inspect Grad-CAM / Integrated Gradients attributions.</li>
-                <li><strong>7. Calibration &amp; 8. Cross-Condition:</strong> Temperature scaling (<code>T = 1.1757</code>, ECE <code>0.0287 &rarr; 0.0179</code>), confusion matrix, and locked 16-subject disorder breakdown.</li>
-                <li><strong>9. Raw EDF Upload:</strong> Upload any overnight <code>.edf</code> (up to 1024 MB) plus optional RemLogic <code>.txt</code> annotations for blind or post-hoc evaluated inference and report export.</li>
+                <li><strong>1. Overview &amp; 2. Architecture:</strong> Cohort pathology breakdown, preprocessing alignment integrity, channel availability, and Phase 2–4 ablation benchmarks.</li>
+                <li><strong>3. PSG Explorer &amp; 4. Live Inference:</strong> Interactive 100 Hz EEG/EOG/EMG waveform inspection with 10 Hz CAP overlays and live validation inference across any Phase 4 checkpoint.</li>
+                <li><strong>5. CAP Benchmark &amp; 6. Explainability:</strong> Post-processed vs. baseline CAP event evaluation (IoU &ge; 0.5) and 1D Grad-CAM / Integrated Gradients channel attributions.</li>
+                <li><strong>7. Calibration &amp; 8. Cross-Condition:</strong> Temperature scaling (<code>T = 1.1757</code>, ECE <code>0.0287 &rarr; 0.0179</code>), 5&times;5 confusion matrix, and locked 16-subject cross-disorder accuracy breakdown.</li>
+                <li><strong>9. Raw EDF Upload:</strong> Upload any overnight <code>.edf</code> (up to 1024 MB) plus optional RemLogic <code>.txt</code> reference annotations for blind inference or post-hoc ground-truth evaluation and <code>.md</code>/<code>.json</code> report export.</li>
               </ul>
 
               <h2 id="limitations">6. Limitations &amp; Research Scope</h2>
               <p>
-                NIDRA is an exploratory research platform, not a clinical diagnostic device. While macro NREM CAP rate correlates strongly with ground truth (<code>r = 0.9319</code>), intermediate <code>A2</code> event boundaries remain challenging without class-weighted GPU retraining, and external single-channel montages (e.g., Sleep-EDF <code>Fpz-Cz</code>) trigger automatic domain-shift warnings.
+                NIDRA is an exploratory research platform and not a cleared medical diagnostic device. While overnight NREM CAP rate correlates strongly with ground truth (<code>r = 0.9319</code>), intermediate <code>A2</code> event boundaries remain challenging without class-weighted GPU retraining, and external single-channel montages trigger automatic domain-shift warnings.
               </p>
             </div>
             """,
