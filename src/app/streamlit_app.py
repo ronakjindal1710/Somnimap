@@ -56,10 +56,11 @@ st.markdown(
         color: {TEXT_PRIMARY};
     }}
     .block-container {{
-        max-width: 1240px !important;
-        padding-top: 1.5rem !important;
-        padding-bottom: 3rem !important;
-        margin: 0 auto !important;
+        max-width: 100% !important;
+        padding-top: 1.2rem !important;
+        padding-bottom: 2.5rem !important;
+        padding-left: 2.2rem !important;
+        padding-right: 2.2rem !important;
     }}
 
     /* Editorial top header bar */
@@ -130,7 +131,7 @@ st.markdown(
         font-size: 0.78rem !important;
         font-weight: 700 !important;
         white-space: nowrap !important;
-        padding: 0.45rem 0.45rem !important;
+        padding: 0.45rem 0.25rem !important;
     }}
     button[kind="primary"] p {{
         color: #040406 !important;
@@ -143,7 +144,7 @@ st.markdown(
         font-size: 0.78rem !important;
         font-weight: 500 !important;
         white-space: nowrap !important;
-        padding: 0.45rem 0.45rem !important;
+        padding: 0.45rem 0.25rem !important;
     }}
     button[kind="secondary"]:hover {{
         border-color: rgba(255, 255, 255, 0.45) !important;
