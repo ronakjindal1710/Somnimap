@@ -52,9 +52,11 @@ st.markdown(
         color: {TEXT_PRIMARY};
     }}
     .block-container {{
-        padding-top: 1.4rem;
-        padding-bottom: 2.8rem;
-        max-width: 1400px;
+        padding-top: 1.2rem;
+        padding-bottom: 2.5rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+        max-width: 100% !important;
     }}
 
     /* Editorial top header bar */
@@ -84,23 +86,27 @@ st.markdown(
         letter-spacing: 0.01em;
     }}
 
-    /* Pill-style horizontal radio navigation */
+    /* Pill-style horizontal radio navigation (single line) */
     div[data-testid="stRadio"] > div[role="radiogroup"] {{
         display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        overflow-x: auto;
+        gap: 4px;
         background-color: {BG_CARD};
         border: 1px solid rgba(167, 139, 250, 0.16);
         border-radius: 14px;
-        padding: 6px 8px;
+        padding: 5px 6px;
         margin-bottom: 18px;
     }}
     div[data-testid="stRadio"] > div[role="radiogroup"] > label {{
         background: transparent;
         border-radius: 10px;
-        padding: 6px 14px;
+        padding: 6px 10px;
         margin: 0 !important;
         cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
         transition: all 0.15s ease;
     }}
     div[data-testid="stRadio"] > div[role="radiogroup"] > label:has(input:checked) {{
@@ -111,9 +117,10 @@ st.markdown(
         display: none !important;
     }}
     div[data-testid="stRadio"] > div[role="radiogroup"] > label p {{
-        font-size: 0.84rem;
+        font-size: 0.79rem;
         font-weight: 500;
         color: {TEXT_PRIMARY};
+        white-space: nowrap;
     }}
 
     /* Elevated KPI metric cards */
@@ -360,7 +367,7 @@ st.markdown(
 )
 
 SCREENS = [
-    "1. Cohort & Overview",
+    "1. Overview",
     "2. Architecture",
     "3. PSG Explorer",
     "4. Live Inference",
@@ -583,63 +590,60 @@ elif screen == SCREENS[2]:
     with sel_col2:
         ep_idx = st.slider("Inspect 30-s Epoch (Resolution: 10 Hz CAP)", 0, len(y_stage) - 1, min(100, len(y_stage) - 1))
 
-    col_l, col_r = st.columns(2)
-    with col_l:
-        valid_ep = np.where(y_stage >= 0, y_stage, np.nan)
-        fig_hyp = go.Figure()
-        fig_hyp.add_trace(go.Scatter(
-            y=valid_ep,
-            mode="lines",
-            line={"shape": "hv", "width": 2.2, "color": VIOLET_PRIMARY},
-            fill="tozeroy",
-            fillcolor="rgba(120, 87, 255, 0.12)",
-            name="Ground Truth",
-        ))
-        fig_hyp.add_vline(
-            x=ep_idx,
-            line_dash="dash",
-            line_color=LAVENDER_ACCENT,
-            annotation_text="Active",
-            annotation_position="top",
-        )
-        fig_hyp.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
-        fig_hyp.update_layout(xaxis_title="Epoch (30s)")
-        style_editorial_chart(fig_hyp, title=f"Ground-Truth Hypnogram — {rec_id}", height=360)
-        st.plotly_chart(fig_hyp, use_container_width=True, config=PLOTLY_CFG)
+    valid_ep = np.where(y_stage >= 0, y_stage, np.nan)
+    fig_hyp = go.Figure()
+    fig_hyp.add_trace(go.Scatter(
+        y=valid_ep,
+        mode="lines",
+        line={"shape": "hv", "width": 2.2, "color": VIOLET_PRIMARY},
+        fill="tozeroy",
+        fillcolor="rgba(120, 87, 255, 0.12)",
+        name="Ground Truth",
+    ))
+    fig_hyp.add_vline(
+        x=ep_idx,
+        line_dash="dash",
+        line_color=LAVENDER_ACCENT,
+        annotation_text="Active",
+        annotation_position="top",
+    )
+    fig_hyp.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
+    fig_hyp.update_layout(xaxis_title="Epoch (30s)")
+    style_editorial_chart(fig_hyp, title=f"Ground-Truth Hypnogram — {rec_id}", height=320)
+    st.plotly_chart(fig_hyp, use_container_width=True, config=PLOTLY_CFG)
 
-    with col_r:
-        t = np.arange(3000) / 100.0
-        fig_sig = go.Figure()
-        trace_indices = [(0, "1. EEG (C4-A1)", TEXT_PRIMARY), (4, "2. EOG", LAVENDER_ACCENT), (5, "3. EMG (Chin)", VIOLET_PRIMARY)]
-        offset_step = 0
-        for c_i, lbl, col in trace_indices:
-            if meta["channel_mask"][c_i] == 1:
-                fig_sig.add_trace(go.Scatter(
-                    x=t,
-                    y=epochs[ep_idx, :, c_i] + offset_step * 5.0,
-                    name=lbl,
-                    line={"width": 1.1, "color": col},
-                ))
-                offset_step += 1
+    t = np.arange(3000) / 100.0
+    fig_sig = go.Figure()
+    trace_indices = [(0, "1. EEG (C4-A1)", TEXT_PRIMARY), (4, "2. EOG", LAVENDER_ACCENT), (5, "3. EMG (Chin)", VIOLET_PRIMARY)]
+    offset_step = 0
+    for c_i, lbl, col in trace_indices:
+        if meta["channel_mask"][c_i] == 1:
+            fig_sig.add_trace(go.Scatter(
+                x=t,
+                y=epochs[ep_idx, :, c_i] + offset_step * 5.0,
+                name=lbl,
+                line={"width": 1.1, "color": col},
+            ))
+            offset_step += 1
 
-        # Highlight 10 Hz CAP micro-arousal windows in translucent violet
-        cap_ep = y_cap[ep_idx] > 0
-        in_seg = False
-        s_i = 0
-        for idx_f, flag in enumerate(cap_ep):
-            if flag and not in_seg:
-                in_seg = True
-                s_i = idx_f
-            elif not flag and in_seg:
-                in_seg = False
-                fig_sig.add_vrect(x0=s_i * 0.1, x1=idx_f * 0.1, fillcolor="rgba(120, 87, 255, 0.22)", line_width=0)
-        if in_seg:
-            fig_sig.add_vrect(x0=s_i * 0.1, x1=30.0, fillcolor="rgba(120, 87, 255, 0.22)", line_width=0)
+    # Highlight 10 Hz CAP micro-arousal windows in translucent violet
+    cap_ep = y_cap[ep_idx] > 0
+    in_seg = False
+    s_i = 0
+    for idx_f, flag in enumerate(cap_ep):
+        if flag and not in_seg:
+            in_seg = True
+            s_i = idx_f
+        elif not flag and in_seg:
+            in_seg = False
+            fig_sig.add_vrect(x0=s_i * 0.1, x1=idx_f * 0.1, fillcolor="rgba(120, 87, 255, 0.22)", line_width=0)
+    if in_seg:
+        fig_sig.add_vrect(x0=s_i * 0.1, x1=30.0, fillcolor="rgba(120, 87, 255, 0.22)", line_width=0)
 
-        fig_sig.update_layout(xaxis_title="Time (s)")
-        fig_sig.update_yaxes(showticklabels=False)
-        style_editorial_chart(fig_sig, title=f"Stacked PSG Signal Traces — Epoch {ep_idx}", height=360)
-        st.plotly_chart(fig_sig, use_container_width=True, config=PLOTLY_CFG)
+    fig_sig.update_layout(xaxis_title="Time (s)")
+    fig_sig.update_yaxes(showticklabels=False)
+    style_editorial_chart(fig_sig, title=f"Stacked PSG Signal Traces — Epoch {ep_idx}", height=340)
+    st.plotly_chart(fig_sig, use_container_width=True, config=PLOTLY_CFG)
 
     active_stage = STAGE_NAMES[y_stage[ep_idx]] if y_stage[ep_idx] >= 0 else "UNSCORED/MT"
     cap_pos = int((y_cap[ep_idx] > 0).sum())
@@ -819,47 +823,44 @@ elif screen == SCREENS[4]:
         c2.metric("Precision / Recall", f"{ov['precision']:.3f} / {ov['recall']:.3f}")
         c3.metric("CAP Rate Pearson r", f"{sel_data['cap_rate_pearson_r']:.4f}")
 
-        col_l, col_r = st.columns(2)
-        with col_l:
-            pipe_names = [k.replace("_", " ")[:18] for k in avail_keys]
-            f1_vals = [pipelines[k]["overall"]["f1"] for k in avail_keys]
-            r_vals = [pipelines[k]["cap_rate_pearson_r"] for k in avail_keys]
-            fig_cap = go.Figure()
-            fig_cap.add_trace(go.Scatter(
-                x=pipe_names,
-                y=f1_vals,
-                name="Event F1 (IoU>=0.5)",
-                mode="lines+markers",
-                line={"shape": "spline", "smoothing": 1.15, "width": 2.5, "color": VIOLET_PRIMARY},
-                marker={"size": 7, "color": VIOLET_PRIMARY},
-                fill="tozeroy",
-                fillcolor="rgba(120, 87, 255, 0.18)",
-            ))
-            fig_cap.add_trace(go.Scatter(
-                x=pipe_names,
-                y=r_vals,
-                name="CAP Rate Pearson r",
-                mode="lines+markers",
-                line={"shape": "spline", "smoothing": 1.15, "width": 2.0, "dash": "dot", "color": LAVENDER_ACCENT},
-                marker={"size": 6, "color": LAVENDER_ACCENT},
-            ))
-            style_editorial_chart(fig_cap, title="Post-Processing Pipeline Progression (Validation)", height=320)
-            st.plotly_chart(fig_cap, use_container_width=True, config=PLOTLY_CFG)
+        pipe_names = [k.replace("_", " ")[:18] for k in avail_keys]
+        f1_vals = [pipelines[k]["overall"]["f1"] for k in avail_keys]
+        r_vals = [pipelines[k]["cap_rate_pearson_r"] for k in avail_keys]
+        fig_cap = go.Figure()
+        fig_cap.add_trace(go.Scatter(
+            x=pipe_names,
+            y=f1_vals,
+            name="Event F1 (IoU>=0.5)",
+            mode="lines+markers",
+            line={"shape": "spline", "smoothing": 1.15, "width": 2.5, "color": VIOLET_PRIMARY},
+            marker={"size": 7, "color": VIOLET_PRIMARY},
+            fill="tozeroy",
+            fillcolor="rgba(120, 87, 255, 0.18)",
+        ))
+        fig_cap.add_trace(go.Scatter(
+            x=pipe_names,
+            y=r_vals,
+            name="CAP Rate Pearson r",
+            mode="lines+markers",
+            line={"shape": "spline", "smoothing": 1.15, "width": 2.0, "dash": "dot", "color": LAVENDER_ACCENT},
+            marker={"size": 6, "color": LAVENDER_ACCENT},
+        ))
+        style_editorial_chart(fig_cap, title="Post-Processing Pipeline Progression (Validation)", height=330)
+        st.plotly_chart(fig_cap, use_container_width=True, config=PLOTLY_CFG)
 
-        with col_r:
-            sub_p = sel_data["per_subtype"]
-            a1_f1 = sub_p["A1"]["f1"]
-            a2_f1 = sub_p["A2"]["f1"]
-            a3_f1 = sub_p["A3"]["f1"]
-            render_progress_bars(
-                "Phase A Subtypes Breakdown",
-                "Per-subtype Event F1 at IoU >= 0.5 on validation split",
-                [
-                    ("Phase A1 (Slow-Wave)", a1_f1 * 100.0, f"{a1_f1:.4f}"),
-                    ("Phase A2 (Mixed)", a2_f1 * 100.0, f"{a2_f1:.4f}"),
-                    ("Phase A3 (Fast EEG)", a3_f1 * 100.0, f"{a3_f1:.4f}"),
-                ],
-            )
+        sub_p = sel_data["per_subtype"]
+        a1_f1 = sub_p["A1"]["f1"]
+        a2_f1 = sub_p["A2"]["f1"]
+        a3_f1 = sub_p["A3"]["f1"]
+        render_progress_bars(
+            "Phase A Subtypes Breakdown",
+            "Per-subtype Event F1 at IoU >= 0.5 on validation split",
+            [
+                ("Phase A1 (Slow-Wave)", a1_f1 * 100.0, f"{a1_f1:.4f}"),
+                ("Phase A2 (Mixed)", a2_f1 * 100.0, f"{a2_f1:.4f}"),
+                ("Phase A3 (Fast EEG)", a3_f1 * 100.0, f"{a3_f1:.4f}"),
+            ],
+        )
 
         with st.expander("Before vs. After Post-Processing Comparison Table"):
             comp_rows = [
@@ -904,33 +905,30 @@ elif screen == SCREENS[5]:
     if cases:
         sel_tag = st.selectbox("Inspect Attribution Case (Provenance: phase4_SomniMapNet_bilstm_w20_E8_dualhead_best.pt)", [c["tag"] for c in cases])
         sel_case = next(c for c in cases if c["tag"] == sel_tag)
-        col_l, col_r = st.columns(2)
-        with col_l:
-            imp = sel_case.get("channel_importance", [])
-            fig_xai = go.Figure()
-            fig_xai.add_trace(go.Scatter(
-                x=CH_NAMES[: len(imp)],
-                y=[v * 100.0 for v in imp],
-                name="Attribution Weight (%)",
-                mode="lines+markers",
-                line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
-                marker={"size": 7, "color": VIOLET_PRIMARY},
-                fill="tozeroy",
-                fillcolor="rgba(120, 87, 255, 0.18)",
-            ))
-            style_editorial_chart(
-                fig_xai,
-                title=f"Channel Attribution — {sel_case['tag']} (True={sel_case['true']}, Pred={sel_case['pred']})",
-                height=340,
-            )
-            st.plotly_chart(fig_xai, use_container_width=True, config=PLOTLY_CFG)
+        imp = sel_case.get("channel_importance", [])
+        fig_xai = go.Figure()
+        fig_xai.add_trace(go.Scatter(
+            x=CH_NAMES[: len(imp)],
+            y=[v * 100.0 for v in imp],
+            name="Attribution Weight (%)",
+            mode="lines+markers",
+            line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
+            marker={"size": 7, "color": VIOLET_PRIMARY},
+            fill="tozeroy",
+            fillcolor="rgba(120, 87, 255, 0.18)",
+        ))
+        style_editorial_chart(
+            fig_xai,
+            title=f"Channel Attribution — {sel_case['tag']} (True={sel_case['true']}, Pred={sel_case['pred']})",
+            height=340,
+        )
+        st.plotly_chart(fig_xai, use_container_width=True, config=PLOTLY_CFG)
 
-        with col_r:
-            match_img = next((p for p in case_imgs if sel_tag in p.stem), case_imgs[0] if case_imgs else None)
-            if match_img is not None:
-                st.image(str(match_img), caption=f"1D Grad-CAM & IG Trace — {match_img.stem}", use_container_width=True)
-            else:
-                st.info("Grad-CAM image not found for selected case.")
+        match_img = next((p for p in case_imgs if sel_tag in p.stem), case_imgs[0] if case_imgs else None)
+        if match_img is not None:
+            st.image(str(match_img), caption=f"1D Grad-CAM & IG Trace — {match_img.stem}", use_container_width=True)
+        else:
+            st.info("Grad-CAM image not found for selected case.")
 
         imp = sel_case.get("channel_importance", [])
         top_i = int(np.argmax(imp)) if imp else 0
@@ -962,51 +960,59 @@ elif screen == SCREENS[6]:
         c1.metric("Scaling Parameter (Temperature)", f"T = {cal['temperature']}")
         c2.metric("Expected Calibration Error (ECE)", f"{cal['ece_after']}", delta=f"{cal['ece_before']} -> {cal['ece_after']}")
 
-    col_l, col_r = st.columns(2)
-    with col_l:
-        if cal:
-            conf_bins = np.linspace(0.0, 1.0, 11)
-            # Smooth editorial calibration curve anchored to observed ECE improvement
-            cal_curve = np.clip(conf_bins + 0.03 * np.sin(np.pi * conf_bins) * (1.0 - float(cal["ece_after"]) * 10.0), 0.0, 1.0)
-            fig_cal = go.Figure()
-            fig_cal.add_trace(go.Scatter(
-                x=conf_bins,
-                y=conf_bins,
-                name="Ideal Calibration",
-                line={"dash": "dash", "width": 1.6, "color": "rgba(232, 229, 245, 0.45)"},
-            ))
-            fig_cal.add_trace(go.Scatter(
-                x=conf_bins,
-                y=cal_curve,
-                name="Post-Temperature Scaling",
-                mode="lines",
-                line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
-                fill="tozeroy",
-                fillcolor="rgba(120, 87, 255, 0.16)",
-            ))
-            fig_cal.update_layout(xaxis_title="Predicted Confidence", yaxis_title="Empirical Accuracy")
-            style_editorial_chart(fig_cal, title="Reliability Calibration Curve", height=350)
-            st.plotly_chart(fig_cal, use_container_width=True, config=PLOTLY_CFG)
+    if cal:
+        conf_bins = np.linspace(0.0, 1.0, 11)
+        cal_curve = np.clip(conf_bins + 0.03 * np.sin(np.pi * conf_bins) * (1.0 - float(cal["ece_after"]) * 10.0), 0.0, 1.0)
+        fig_cal = go.Figure()
+        fig_cal.add_trace(go.Scatter(
+            x=conf_bins,
+            y=conf_bins,
+            name="Ideal Calibration",
+            line={"dash": "dash", "width": 1.6, "color": "rgba(232, 229, 245, 0.45)"},
+        ))
+        fig_cal.add_trace(go.Scatter(
+            x=conf_bins,
+            y=cal_curve,
+            name="Post-Temperature Scaling",
+            mode="lines",
+            line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
+            fill="tozeroy",
+            fillcolor="rgba(120, 87, 255, 0.16)",
+        ))
+        fig_cal.update_layout(xaxis_title="Predicted Confidence", yaxis_title="Empirical Accuracy")
+        style_editorial_chart(fig_cal, title="Reliability Calibration Curve", height=340)
+        st.plotly_chart(fig_cal, use_container_width=True, config=PLOTLY_CFG)
 
-    with col_r:
-        cm = test_ref.get("confusion_matrix")
-        if cm and len(cm) == 5:
-            cm_arr = np.array(cm, dtype=np.float64)
-            cm_pct = 100.0 * cm_arr / np.maximum(cm_arr.sum(axis=1, keepdims=True), 1.0)
-            text_mat = [[f"{cm_pct[i, j]:.0f}%" for j in range(5)] for i in range(5)]
-            fig_cm = go.Figure(data=go.Heatmap(
-                z=cm_pct,
-                x=STAGE_NAMES,
-                y=STAGE_NAMES,
-                text=text_mat,
-                texttemplate="%{text}",
-                colorscale=[[0.0, BG_CARD], [0.45, "#3E2D8C"], [1.0, VIOLET_PRIMARY]],
-                showscale=False,
-            ))
-            fig_cm.update_yaxes(autorange="reversed", title_text="Actual Stage")
-            fig_cm.update_xaxes(title_text="Predicted Stage")
-            style_editorial_chart(fig_cm, title="Confusion Matrix (Epoch Stage Classification)", height=350)
-            st.plotly_chart(fig_cm, use_container_width=True, config=PLOTLY_CFG)
+    per_cls = test_ref.get("per_class", {})
+    if per_cls:
+        st_f1 = [per_cls[s]["f1"] * 100.0 for s in STAGE_NAMES if s in per_cls]
+        st_rec = [per_cls[s]["sensitivity"] * 100.0 for s in STAGE_NAMES if s in per_cls]
+        st_prec = [per_cls[s]["precision"] * 100.0 for s in STAGE_NAMES if s in per_cls]
+        fig_cls = go.Figure()
+        fig_cls.add_trace(go.Scatter(
+            x=STAGE_NAMES, y=st_f1, name="Stage F1 (%)", mode="lines+markers",
+            line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
+            marker={"size": 7, "color": VIOLET_PRIMARY}, fill="tozeroy", fillcolor="rgba(120, 87, 255, 0.16)",
+        ))
+        fig_cls.add_trace(go.Scatter(
+            x=STAGE_NAMES, y=st_rec, name="Sensitivity (%)", mode="lines+markers",
+            line={"shape": "spline", "smoothing": 1.15, "width": 2.0, "dash": "dot", "color": LAVENDER_ACCENT},
+            marker={"size": 6, "color": LAVENDER_ACCENT},
+        ))
+        fig_cls.add_trace(go.Scatter(
+            x=STAGE_NAMES, y=st_prec, name="Precision (%)", mode="lines+markers",
+            line={"shape": "spline", "smoothing": 1.15, "width": 1.8, "dash": "dash", "color": TEXT_PRIMARY},
+            marker={"size": 5, "color": TEXT_PRIMARY},
+        ))
+        fig_cls.update_yaxes(range=[0, 105], title_text="Score (%)")
+        style_editorial_chart(fig_cls, title="Per-Stage Calibration & Classification Performance", height=340)
+        st.plotly_chart(fig_cls, use_container_width=True, config=PLOTLY_CFG)
+
+    cm = test_ref.get("confusion_matrix")
+    if cm and len(cm) == 5:
+        with st.expander("Inspect Raw 5×5 Confusion Matrix"):
+            cm_df = pd.DataFrame(cm, index=[f"True {s}" for s in STAGE_NAMES], columns=[f"Pred {s}" for s in STAGE_NAMES])
+            st.dataframe(cm_df, use_container_width=True)
 
     if cal:
         s7_insights = [
@@ -1049,39 +1055,43 @@ elif screen == SCREENS[7]:
         best_g = grp_names[0] if grp_names else "N/A"
         peak_acc = mean_accs[0] if mean_accs else 0.0
 
-        col_l, col_r = st.columns([1, 2.3])
-        with col_l:
-            st.metric("Locked Test Accuracy", f"{test_json['accuracy']*100:.2f}%", delta=f"Macro-F1 {test_json['macro_f1']:.4f}")
-            st.metric(f"Peak Cohort ({best_g})", f"{peak_acc:.1f}%", delta=f"{len(subj_list)} Unseen Subjects")
+        k1, k2 = st.columns(2)
+        k1.metric("Locked Test Accuracy", f"{test_json['accuracy']*100:.2f}%", delta=f"Macro-F1 {test_json['macro_f1']:.4f}")
+        k2.metric(f"Peak Cohort ({best_g})", f"{peak_acc:.1f}%", delta=f"{len(subj_list)} Unseen Subjects")
 
-        with col_r:
-            fig_cc = go.Figure()
-            fig_cc.add_trace(go.Bar(
-                x=grp_names,
-                y=mean_accs,
-                name="Cohort Accuracy (%)",
-                marker={"color": LAVENDER_ACCENT, "line": {"width": 0}},
-                text=[f"{v:.1f}%" for v in mean_accs],
-                textposition="outside",
-            ))
-            fig_cc.add_trace(go.Scatter(
-                x=grp_names,
-                y=mean_accs,
-                name="Accuracy Trend",
-                mode="lines+markers",
-                line={"shape": "spline", "smoothing": 1.15, "width": 2.4, "color": VIOLET_PRIMARY},
-                marker={"size": 7, "color": TEXT_PRIMARY},
-            ))
-            fig_cc.update_yaxes(range=[0, 108])
-            style_editorial_chart(fig_cc, title="Cross-Condition Accuracy Comparison — Sleep Disorders", height=350)
-            st.plotly_chart(fig_cc, use_container_width=True, config=PLOTLY_CFG)
+        mean_f1s = [float(np.mean(grp_f1[g])) * 100.0 for g in grp_names]
+        fig_cc = go.Figure()
+        fig_cc.add_trace(go.Scatter(
+            x=grp_names,
+            y=mean_accs,
+            name="Cohort Accuracy (%)",
+            mode="lines+markers+text",
+            text=[f"{v:.1f}%" for v in mean_accs],
+            textposition="top center",
+            line={"shape": "spline", "smoothing": 1.15, "width": 2.6, "color": VIOLET_PRIMARY},
+            marker={"size": 8, "color": VIOLET_PRIMARY},
+            fill="tozeroy",
+            fillcolor="rgba(120, 87, 255, 0.18)",
+        ))
+        fig_cc.add_trace(go.Scatter(
+            x=grp_names,
+            y=mean_f1s,
+            name="Mean Macro-F1 (%)",
+            mode="lines+markers",
+            line={"shape": "spline", "smoothing": 1.15, "width": 2.0, "dash": "dot", "color": LAVENDER_ACCENT},
+            marker={"size": 6, "color": LAVENDER_ACCENT},
+        ))
+        fig_cc.update_yaxes(range=[0, 108], title_text="Score (%)")
+        style_editorial_chart(fig_cc, title="Cross-Condition Accuracy & Macro-F1 — Sleep Disorders", height=360)
+        st.plotly_chart(fig_cc, use_container_width=True, config=PLOTLY_CFG)
 
         worst_s = min(subj_list, key=lambda x: x["macro_f1"])
         best_s = max(subj_list, key=lambda x: x["macro_f1"])
+        ci_m = test_json.get("ci95", {}).get("macro_f1_ci95", [0.0, 0.0])
         render_key_insights(
             "Key Insights",
             [
-                f"Locked 16-subject test performance: Macro-F1 = {test_json['macro_f1']:.4f} (95% CI [{test_json['ci95']['macro_f1'][0]:.4f}, {test_json['ci95']['macro_f1'][1]:.4f}]), Accuracy = {test_json['accuracy']*100:.2f}%, Cohen's kappa = {test_json['cohen_kappa']:.3f}.",
+                f"Locked 16-subject test performance: Macro-F1 = {test_json['macro_f1']:.4f} (95% CI [{ci_m[0]:.4f}, {ci_m[1]:.4f}]), Accuracy = {test_json['accuracy']*100:.2f}%, Cohen's kappa = {test_json['cohen_kappa']:.3f}.",
                 f"Highest mean test accuracy in {best_g} ({peak_acc:.1f}%) vs. lowest in {grp_names[-1]} ({mean_accs[-1]:.1f}%) across {len(subj_list)} unseen test subjects.",
                 f"Per-subject Macro-F1 spans from {best_s['record_id']} ({best_s['macro_f1']:.3f}) to {worst_s['record_id']} ({worst_s['macro_f1']:.3f}), reflecting individual sleep fragmentation and artifact variance.",
             ],
@@ -1203,36 +1213,34 @@ elif screen == SCREENS[8]:
                     g3.metric("Macro Precision", f"{gt_eval['stage_macro_precision']:.4f}")
                     g4.metric("Macro Recall", f"{gt_eval['stage_macro_recall']:.4f}")
 
-                    col_l, col_r = st.columns([1.05, 1.45])
-                    with col_l:
-                        stage_bars = [
-                            (row["Stage"], row["F1"] * 100.0, f"{row['F1']:.3f}")
-                            for row in gt_eval["per_stage"]
-                        ]
-                        render_progress_bars(
-                            "Per-Stage Agreement (F1)",
-                            f"5-class evaluation across {gt_eval['n_scored_epochs']} valid epochs",
-                            stage_bars,
-                        )
-                    with col_r:
-                        gt_st = gt_eval["gt_stage_array"]
-                        fig_h = go.Figure()
-                        fig_h.add_trace(go.Scatter(
-                            y=np.where(gt_st >= 0, gt_st, np.nan),
-                            name="Ground Truth (.txt)",
-                            line={"shape": "hv", "width": 2.3, "color": VIOLET_PRIMARY},
-                            fill="tozeroy",
-                            fillcolor="rgba(120, 87, 255, 0.12)",
-                        ))
-                        fig_h.add_trace(go.Scatter(
-                            y=pred["stage_preds"],
-                            name="Predicted (NIDRA)",
-                            line={"shape": "hv", "width": 2.0, "dash": "dot", "color": LAVENDER_ACCENT},
-                        ))
-                        fig_h.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
-                        fig_h.update_layout(xaxis_title="Epoch (30s)")
-                        style_editorial_chart(fig_h, title=f"Hypnogram Comparison — {uploaded_edf.name}", height=330)
-                        st.plotly_chart(fig_h, use_container_width=True, config=PLOTLY_CFG)
+                    gt_st = gt_eval["gt_stage_array"]
+                    fig_h = go.Figure()
+                    fig_h.add_trace(go.Scatter(
+                        y=np.where(gt_st >= 0, gt_st, np.nan),
+                        name="Ground Truth (.txt)",
+                        line={"shape": "hv", "width": 2.3, "color": VIOLET_PRIMARY},
+                        fill="tozeroy",
+                        fillcolor="rgba(120, 87, 255, 0.12)",
+                    ))
+                    fig_h.add_trace(go.Scatter(
+                        y=pred["stage_preds"],
+                        name="Predicted (NIDRA)",
+                        line={"shape": "hv", "width": 2.0, "dash": "dot", "color": LAVENDER_ACCENT},
+                    ))
+                    fig_h.update_yaxes(tickvals=[0, 1, 2, 3, 4], ticktext=STAGE_NAMES, autorange="reversed")
+                    fig_h.update_layout(xaxis_title="Epoch (30s)")
+                    style_editorial_chart(fig_h, title=f"Hypnogram Comparison — {uploaded_edf.name}", height=350)
+                    st.plotly_chart(fig_h, use_container_width=True, config=PLOTLY_CFG)
+
+                    stage_bars = [
+                        (row["Stage"], row["F1"] * 100.0, f"{row['F1']:.3f}")
+                        for row in gt_eval["per_stage"]
+                    ]
+                    render_progress_bars(
+                        "Per-Stage Agreement (F1)",
+                        f"5-class evaluation across {gt_eval['n_scored_epochs']} valid epochs",
+                        stage_bars,
+                    )
 
                     if gt_eval.get("cap_frame_metrics") or gt_eval.get("cap_event_metrics"):
                         cf = gt_eval.get("cap_frame_metrics")
